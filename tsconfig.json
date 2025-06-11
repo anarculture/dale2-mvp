@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@dale/config/*": ["packages/config/*"],
+      "@dale/ui/*": ["packages/ui/src/*"]
+    }
+  }
+}
