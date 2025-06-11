@@ -1,0 +1,9 @@
+{
+  "extends": "@dale/config/tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["dom", "es2020"]
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

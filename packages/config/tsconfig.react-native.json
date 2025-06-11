@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "display": "React Native",
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "target": "esnext",
+    "lib": ["es2020"],
+    "jsx": "react-native",
+    "module": "commonjs",
+    "strict": true
+  }
+}
