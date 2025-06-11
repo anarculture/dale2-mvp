@@ -1,11 +1,16 @@
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { SessionProvider } from '../lib/SessionContext';
+import Layout from '../components/Layout';
 
-export default function App({ Component, pageProps }: AppProps) {
+function App({ Component, pageProps }: AppProps) {
   return (
     <SessionProvider>
-      <Component {...pageProps} />
+      <Layout>
+        <Component {...pageProps} />
+      </Layout>
     </SessionProvider>
   );
 }
+
+export default App;
