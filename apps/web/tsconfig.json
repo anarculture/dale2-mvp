@@ -1,5 +1,5 @@
 {
-  "extends": "@dale/config/tsconfig.nextjs.json",
+  "extends": "../../packages/config/tsconfig.nextjs.json",
   "include": ["src", "next-env.d.ts"],
   "exclude": ["node_modules"]
 }
