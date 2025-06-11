@@ -7,7 +7,7 @@
 
 # Build outputs
 /dist
-/.next/
+**/.next/
 /out/
 
 # Logs
