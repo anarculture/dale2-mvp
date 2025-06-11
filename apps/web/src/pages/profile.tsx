@@ -1,92 +1,139 @@
 import { useEffect, useState } from 'react';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useSession } from '../lib/SessionContext';
 import { supabase } from '../lib/supabaseClient';
-import Avatar from '../components/Avatar';
+import { CheckCircle, ChevronRight, MessageSquare, Music, PawPrint, PlusCircle, Wind } from 'lucide-react';
 
 const Profile: NextPage = () => {
   const { session } = useSession();
   const router = useRouter();
+
   const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [lastName, setLastName] = useState('');
+  const [bio, setBio] = useState('');
+  const [birthDate, setBirthDate] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (session) {
-      setName(session.user.user_metadata.name || '');
+      const { user_metadata } = session.user;
+      setName(user_metadata.name || '');
+      setLastName(user_metadata.last_name || '');
+      setBio(user_metadata.bio || '');
+      setBirthDate(user_metadata.birth_date || '');
+      if (user_metadata.avatar_url) {
+        downloadImage(user_metadata.avatar_url);
+      }
     } else {
       router.push('/login');
     }
   }, [session, router]);
 
-  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-    setError('');
-
-    const { error } = await supabase.auth.updateUser({
-      data: { name },
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      setMessage('Profile updated successfully!');
+  async function downloadImage(path: string) {
+    try {
+      const { data, error } = await supabase.storage.from('avatars').download(path);
+      if (error) throw error;
+      const url = URL.createObjectURL(data);
+      setAvatarUrl(url);
+    } catch (error) {
+      console.log('Error downloading image: ', (error as Error).message);
     }
-    setLoading(false);
-  };
-
-  const handleAvatarUpload = async (url: string) => {
-    const { error } = await supabase.auth.updateUser({
-      data: { avatar_url: url },
-    });
-    if (error) {
-      setError(error.message);
-    } else {
-      setMessage('Avatar updated successfully!');
-    }
-  };
-
-  if (!session) {
-    return null; // or a loading spinner
   }
 
+  async function uploadAvatar(event: React.ChangeEvent<HTMLInputElement>) {
+    try {
+      setUploading(true);
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error('You must select an image to upload.');
+      }
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `${session!.user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      await supabase.auth.updateUser({ data: { avatar_url: filePath } });
+      downloadImage(filePath);
+      setMessage('Avatar updated successfully!');
+    } catch (error) {
+      setError((error as Error).message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  if (!session) return null;
+
+  const completion = (Number(!!name) + Number(!!avatarUrl) + Number(!!session.user.email)) / 3 * 100;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center">
-      <div className="max-w-md w-full bg-white p-8 border border-gray-200 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Your Profile</h1>
-
-        <Avatar session={session} onUpload={handleAvatarUpload} />
-
-        <form onSubmit={handleUpdateProfile} className="mt-6">
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-              Full Name
-            </label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-              placeholder="Your Name"
-            />
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
+        <Link href={session ? `/user/${session.user.id}` : '#'}>
+          <div className="flex items-center justify-between p-4 bg-white rounded-t-lg shadow-sm cursor-pointer hover:bg-gray-50">
+            <div className="flex items-center space-x-4">
+              <img src={avatarUrl || `https://avatar.vercel.sh/${session.user.email}`} alt="Avatar" className="w-20 h-20 rounded-full" />
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">{`${name} ${lastName}`.trim() || 'New User'}</h1>
+                <p className="text-gray-500">Intermediate</p>
+              </div>
+            </div>
+            <ChevronRight className="w-6 h-6 text-gray-400" />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-            <p className="text-gray-900">{session.user.email}</p>
+        </Link>
+
+        <div className="p-4 bg-blue-50 border-l-4 border-blue-400">
+          <p className="font-bold">Complete your profile</p>
+          <p className="text-sm text-gray-600">This helps build trust and encourages members to travel with you.</p>
+          <div className="w-full bg-gray-200 rounded-full h-2.5 my-2">
+            <div className="bg-blue-400 h-2.5 rounded-full" style={{ width: `${completion}%` }}></div>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline disabled:bg-blue-300"
-          >
-            {loading ? 'Updating...' : 'Update Profile'}
-          </button>
-        </form>
+          <label htmlFor="avatar-upload" className="text-sm font-medium text-blue-600 hover:underline cursor-pointer">
+            {uploading ? 'Uploading...' : 'Upload a profile picture'}
+          </label>
+          <input id="avatar-upload" type="file" accept="image/*" onChange={uploadAvatar} disabled={uploading} className="hidden" />
+        </div>
+
+        <div className="p-4 bg-white space-y-4 shadow-sm">
+          <Link href="/profile/edit" className="text-blue-600">
+            Modify your personal information
+          </Link>
+        </div>
+
+        <div className="mt-6">
+          <div className="p-4 bg-white rounded-lg shadow-sm">
+            <h2 className="text-xl font-bold mb-4">Verify your profile</h2>
+            <ul className="space-y-3">
+              <li className="flex items-center space-x-3 text-blue-600"><PlusCircle className="w-5 h-5" /><span>Verify identification</span></li>
+              <li className="flex items-center space-x-3 text-green-600"><CheckCircle className="w-5 h-5" /><span>{session.user.email}</span></li>
+              <li className="flex items-center space-x-3 text-green-600"><CheckCircle className="w-5 h-5" /><span>+525522501196 (placeholder)</span></li>
+            </ul>
+          </div>
+
+          <div className="mt-6 p-4 bg-white rounded-lg shadow-sm">
+            <h2 className="text-xl font-bold mb-2">Personal Information</h2>
+            <p className="text-gray-600 italic mb-4">{bio || 'No bio yet. Add one!'}</p>
+            <ul className="space-y-3">
+              <li className="flex items-center space-x-3"><MessageSquare className="w-5 h-5 text-gray-500" /><span>I'm chatty when I feel comfortable</span></li>
+              <li className="flex items-center space-x-3"><Music className="w-5 h-5 text-gray-500" /><span>Playlists are the best!</span></li>
+              <li className="flex items-center space-x-3"><Wind className="w-5 h-5 text-gray-500" /><span>Smoking is allowed</span></li>
+              <li className="flex items-center space-x-3"><PawPrint className="w-5 h-5 text-gray-500" /><span>Pets are welcome</span></li>
+            </ul>
+            <button className="mt-4 text-blue-600">Modify your travel preferences</button>
+          </div>
+
+          <div className="mt-6 p-4 bg-white rounded-lg shadow-sm">
+            <h2 className="text-xl font-bold mb-4">Vehicles</h2>
+            <button className="flex items-center space-x-2 text-blue-600"><PlusCircle className="w-5 h-5" /><span>Add a car</span></button>
+          </div>
+        </div>
         {message && <p className="mt-4 text-center text-green-500">{message}</p>}
         {error && <p className="mt-4 text-center text-red-500">{error}</p>}
       </div>
@@ -95,5 +142,8 @@ const Profile: NextPage = () => {
 };
 
 export default Profile;
+
+
+
 
 
