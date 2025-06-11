@@ -68,6 +68,7 @@ const Signup: NextPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
               placeholder="you@example.com"
+              autoComplete="email"
               required
             />
           </div>
@@ -82,6 +83,7 @@ const Signup: NextPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
               placeholder="••••••••"
+              autoComplete="new-password"
               required
             />
           </div>

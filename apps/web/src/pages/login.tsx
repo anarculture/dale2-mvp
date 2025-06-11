@@ -48,6 +48,7 @@ const Login: NextPage = () => {
               className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
               placeholder="you@example.com"
               required
+              autoComplete="email"
             />
           </div>
           <div className="mb-6">
@@ -62,6 +63,7 @@ const Login: NextPage = () => {
               className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
               placeholder="••••••••"
               required
+              autoComplete="current-password"
             />
           </div>
           <button
