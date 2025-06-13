@@ -13,7 +13,13 @@ const Home: NextPage = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    router.push(`/trips?origin=${origin}&destination=${destination}&departureDate=${date}&passengers=${passengers}`);
+    const query = new URLSearchParams({
+      origin: origin.trim(),
+      destination: destination.trim(),
+      departureDate: date,
+      passengers: passengers.toString(),
+    });
+    router.push(`/trips?${query.toString()}`);
   };
 
   return (
