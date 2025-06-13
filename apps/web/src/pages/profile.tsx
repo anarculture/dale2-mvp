@@ -69,7 +69,7 @@ const Profile: NextPage = () => {
     }
   }
 
-  if (!session) return null;
+  if (!session || !session.user) return null;
 
   const completion = (Number(!!name) + Number(!!avatarUrl) + Number(!!session.user.email)) / 3 * 100;
 
