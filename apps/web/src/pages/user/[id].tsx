@@ -3,7 +3,8 @@ import { CheckCircle, MessageSquare, Music, PawPrint, Search, Star, Wind } from 
 import { calculateAge } from '../../utils/helpers';
 import { supabase } from '../../lib/supabaseClient';
 
-// NOTE: This interface assumes you have a public `profiles` table.
+// NOTE: This interface assumes you have a public `profiles` table
+// with `email_verified` and `phone_verified` boolean columns.
 interface Profile {
   id: string;
   name: string;
@@ -11,8 +12,8 @@ interface Profile {
   bio: string;
   birth_date: string;
   avatar_url: string;
-  email_confirmed_at: string; // This needs to be in your profiles table
-  phone_confirmed_at: string; // This needs to be in your profiles table
+  email_verified: boolean;
+  phone_verified: boolean;
 }
 
 interface PublicProfilePageProps {
@@ -66,13 +67,13 @@ const PublicProfilePage: NextPage<PublicProfilePageProps> = ({ profile, error })
         </section>
 
         <section className="space-y-3 mb-6">
-          {profile.email_confirmed_at && (
+          {profile.email_verified && (
             <div className="flex items-center space-x-2 text-green-600">
               <CheckCircle className="w-5 h-5" />
               <span>E-mail confirmado</span>
             </div>
           )}
-          {profile.phone_confirmed_at && (
+          {profile.phone_verified && (
             <div className="flex items-center space-x-2 text-green-600">
               <CheckCircle className="w-5 h-5" />
               <span>Número de teléfono confirmado</span>
