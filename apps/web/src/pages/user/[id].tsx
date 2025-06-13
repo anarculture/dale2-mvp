@@ -3,7 +3,8 @@ import { CheckCircle, MessageSquare, Music, PawPrint, Search, Star, Wind } from 
 import { calculateAge } from '../../utils/helpers';
 import { supabase } from '../../lib/supabaseClient';
 
-// NOTE: This interface assumes you have a public `profiles` table.
+// L'interfaccia `Profile` riflette la tabella `public.profiles`
+// dopo la migrazione `update_profiles_table.sql`.
 interface Profile {
   id: string;
   name: string;
@@ -11,8 +12,8 @@ interface Profile {
   bio: string;
   birth_date: string;
   avatar_url: string;
-  email_confirmed_at: string; // This needs to be in your profiles table
-  phone_confirmed_at: string; // This needs to be in your profiles table
+  email_confirmed_at: string;
+  phone_confirmed_at: string;
 }
 
 interface PublicProfilePageProps {
