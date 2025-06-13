@@ -105,20 +105,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     .eq('id', id as string)
     .single();
 
-  if (error && !profile) {
-    console.error('Error fetching public profile:', error.message);
+  if (error || !profile) {
+    console.warn(`Profile not found for id: ${id}`, error);
     return {
-      props: {
-        profile: null,
-        error: 'Could not fetch user profile. Please ensure a public `profiles` table exists and Row Level Security is configured correctly.',
-      },
+      notFound: true, // Return a 404 page
     };
   }
 
   return {
     props: {
       profile,
-      error: null,
     },
   };
 };

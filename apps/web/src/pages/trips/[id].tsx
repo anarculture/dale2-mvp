@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import type { NextPage } from 'next';
+import { useState } from 'react';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import type { NextPage, GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { supabase } from '../../lib/supabaseClient';
+
 import { Star, MessageSquare, AlertTriangle, Clock, MapPin, Car } from 'lucide-react';
 
 // Define the type for a driver's profile
@@ -29,51 +30,22 @@ interface Trip {
   profiles: Profile | null; // Joined profile data
 }
 
-const TripDetailsPage: NextPage = () => {
-  const router = useRouter();
-  const { id } = router.query;
-  const [trip, setTrip] = useState<Trip | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface PageProps {
+  trip: Trip;
+}
 
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchTrip = async () => {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('trips')
-        .select('*, profiles(*)')
-        .eq('id', id)
-        .single();
-
-      if (error) {
-        setError('Trip not found or an error occurred.');
-        console.error('Error fetching trip:', error);
-      } else {
-        setTrip(data as Trip);
-      }
-      setLoading(false);
-    };
-
-    fetchTrip();
-  }, [id]);
-
-  if (loading) {
-    return <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center text-red-500">{error}</div>;
-  }
-
-  if (!trip) {
-    return <div className="bg-gray-900 text-white min-h-screen flex items-center justify-center">Trip not found.</div>;
-  }
+const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
+  const session = useSession();
+  const supabase = useSupabaseClient();
+  const [trip, setTrip] = useState<Trip>(initialTrip);
+  const [bookingSeats, setBookingSeats] = useState(1);
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState(false);
 
   const driver = trip.profiles;
   const departureDate = new Date(trip.departure_time);
-  const arrivalDate = new Date(departureDate.getTime() + (6.16 * 60 * 60 * 1000)); // Placeholder for travel time
+
 
   return (
     <div className="bg-gray-900 text-white min-h-screen">
@@ -97,8 +69,7 @@ const TripDetailsPage: NextPage = () => {
               <div className="flex items-start">
                 <MapPin className="w-5 h-5 mr-4 mt-1 text-gray-400" />
                 <div>
-                  <p className="font-semibold">{arrivalDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                  <p className="text-gray-300">{trip.destination}</p>
+                  <p className="font-semibold">{trip.destination}</p>
                 </div>
               </div>
             </div>
@@ -159,13 +130,63 @@ const TripDetailsPage: NextPage = () => {
                 </div>
               )}
               <div className="border-t border-gray-700 my-4"></div>
-              <div className="flex justify-between items-center">
-                <p className="text-gray-300">1 pasajero</p>
-                <p className="text-2xl font-bold">${trip.price.toFixed(2)}</p>
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <label htmlFor="seats" className="block text-gray-400 text-sm mb-1">Pasajeros</label>
+                  <select
+                    id="seats"
+                    value={bookingSeats}
+                    onChange={e => setBookingSeats(Number(e.target.value))}
+                    className="bg-gray-900 text-white rounded-md px-2 py-1 border border-gray-700 focus:outline-none"
+                    disabled={bookingLoading || (trip.available_seats < 1)}
+                  >
+                    {Array.from({ length: Math.max(trip.available_seats, 1) }, (_, i) => i + 1).map(seat => (
+                      <option key={seat} value={seat}>{seat}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">Total</p>
+                  <p className="text-2xl font-bold">${(trip.price * bookingSeats).toFixed(2)}</p>
+                </div>
               </div>
-              <button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg">
-                Reservar
+              <button
+                className={`mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg ${bookingLoading || trip.available_seats < 1 ? 'opacity-60 cursor-not-allowed' : ''}`}
+                onClick={async () => {
+                  setBookingLoading(true);
+                  setBookingError(null);
+                  setBookingSuccess(false);
+                  if (!session?.user?.id) {
+                    setBookingError('Debes iniciar sesión para reservar.');
+                    setBookingLoading(false);
+                    return;
+                  }
+                  if (bookingSeats > trip.available_seats) {
+                    setBookingError('No hay suficientes asientos disponibles.');
+                    setBookingLoading(false);
+                    return;
+                  }
+                  // Insert booking
+                  const { error } = await supabase.from('bookings').insert({
+                    trip_id: trip.id,
+                    passenger_id: session.user.id,
+                    seats_booked: bookingSeats,
+                    status: 'confirmed'
+                  });
+                  if (error) {
+                    setBookingError('No se pudo completar la reserva. Intenta de nuevo.');
+                  } else {
+                    setBookingSuccess(true);
+                    setTrip({ ...trip, available_seats: trip.available_seats - bookingSeats });
+                  }
+                  setBookingLoading(false);
+                }}
+                disabled={bookingLoading || trip.available_seats < 1}
+              >
+                {bookingLoading ? 'Reservando...' : trip.available_seats < 1 ? 'Sin asientos' : 'Reservar'}
               </button>
+              {bookingError && <p className="text-red-400 mt-2 text-center">{bookingError}</p>}
+              {bookingSuccess && <p className="text-green-400 mt-2 text-center">¡Reserva confirmada!</p>}
             </div>
           </div>
         </div>
@@ -175,3 +196,25 @@ const TripDetailsPage: NextPage = () => {
 };
 
 export default TripDetailsPage;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { id } = context.params!;
+
+  const { data, error } = await supabase
+    .from('trips')
+    .select('*, profiles(id, full_name, photo_url, rating, total_reviews)')
+    .eq('id', id)
+    .single();
+
+  if (error || !data) {
+    return {
+      notFound: true, // This will render the 404 page
+    };
+  }
+
+  return {
+    props: {
+      trip: data,
+    },
+  };
+};
