@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useSession } from '../../lib/SessionContext';
+import { useSession } from '@supabase/auth-helpers-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const EditProfilePage: NextPage = () => {
-  const { session } = useSession();
+  const session = useSession();
   const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
-import { supabase } from '../../lib/supabaseClient';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Star, Moon } from 'lucide-react';
 import AutocompleteInput from '../../components/AutocompleteInput';
 
@@ -31,6 +31,7 @@ const formatTime = (date: Date) => {
 const TripsListPage: NextPage = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const supabase = useSupabaseClient();
   
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');

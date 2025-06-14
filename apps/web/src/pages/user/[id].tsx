@@ -1,7 +1,7 @@
 import { GetServerSideProps, NextPage } from 'next';
 import { CheckCircle, MessageSquare, Music, PawPrint, Search, Star, Wind } from 'lucide-react';
 import { calculateAge } from '../../utils/helpers';
-import { supabase } from '../../lib/supabaseClient';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 // L'interfaccia `Profile` riflette la tabella `public.profiles`
 // dopo la migrazione `update_profiles_table.sql`.
@@ -98,6 +98,8 @@ const PublicProfilePage: NextPage<PublicProfilePageProps> = ({ profile, error })
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params!;
+
+  const supabase = createServerSupabaseClient(context);
 
   // This call requires a public `profiles` table with RLS enabled.
   const { data: profile, error } = await supabase
