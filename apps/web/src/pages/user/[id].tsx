@@ -1,10 +1,7 @@
 import { GetServerSideProps, NextPage } from 'next';
 import { CheckCircle, MessageSquare, Music, PawPrint, Search, Star, Wind } from 'lucide-react';
 import { calculateAge } from '../../utils/helpers';
-import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
-// L'interfaccia `Profile` riflette la tabella `public.profiles`
-// dopo la migrazione `update_profiles_table.sql`.
 interface Profile {
   id: string;
   name: string;
@@ -12,8 +9,10 @@ interface Profile {
   bio: string;
   birth_date: string;
   avatar_url: string;
+
   email_confirmed_at: string;
   phone_confirmed_at: string;
+
 }
 
 interface PublicProfilePageProps {
@@ -67,13 +66,13 @@ const PublicProfilePage: NextPage<PublicProfilePageProps> = ({ profile, error })
         </section>
 
         <section className="space-y-3 mb-6">
-          {profile.email_confirmed_at && (
+          {profile.email_verified && (
             <div className="flex items-center space-x-2 text-green-600">
               <CheckCircle className="w-5 h-5" />
               <span>E-mail confirmado</span>
             </div>
           )}
-          {profile.phone_confirmed_at && (
+          {profile.phone_verified && (
             <div className="flex items-center space-x-2 text-green-600">
               <CheckCircle className="w-5 h-5" />
               <span>Número de teléfono confirmado</span>
