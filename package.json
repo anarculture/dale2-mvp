@@ -5,11 +5,18 @@
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "test": "pnpm --filter @dale/web test"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
+    "dotenv": "^16.5.0",
     "prettier": "^3.2.5",
     "supabase": "^2.24.3",
+    "tsx": "^4.20.2",
     "turbo": "^2.0.4"
   },
   "packageManager": "pnpm@9.1.0"

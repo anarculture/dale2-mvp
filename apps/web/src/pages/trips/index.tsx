@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
-import { supabase } from '../../lib/supabaseClient';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Star, Moon } from 'lucide-react';
 import AutocompleteInput from '../../components/AutocompleteInput';
 
@@ -10,7 +10,7 @@ interface Trip {
   origin: string;
   destination: string;
   departure_time: string;
-  arrival_time: string; 
+ 
   available_seats: number;
   price: number;
   profiles: {
@@ -19,30 +19,23 @@ interface Trip {
     photo_url: string;
     rating: number;
     total_reviews: number;
-  };
+  } | null;
 }
 
 const formatTime = (date: Date) => {
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 };
 
-const getDuration = (start: string, end: string) => {
-    if (!start || !end) return null;
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    const diffMs = endDate.getTime() - startDate.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    return `${diffHours}h${diffMins.toString().padStart(2, '0')}`;
-};
+
 
 const TripsListPage: NextPage = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
+  const supabase = useSupabaseClient();
   
-  const [origin, setOrigin] = useState('Caracas');
-  const [destination, setDestination] = useState('Maracaibo');
-  const [departureDate, setDepartureDate] = useState(new Date().toISOString().split('T')[0]);
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [departureDate, setDepartureDate] = useState('');
   const [passengers, setPassengers] = useState(1);
   const [sortBy, setSortBy] = useState('departure_time');
   const [filterAutomaticBooking, setFilterAutomaticBooking] = useState(false);
@@ -166,11 +159,9 @@ const TripsListPage: NextPage = () => {
                 <p className="text-center">Loading trips...</p>
             ) : (
                 <div className="space-y-4">
-                {trips.length > 0 ? (
+                  {trips.length > 0 ? (
                     trips.map((trip) => {
                         const departure = new Date(trip.departure_time);
-                        const arrival = new Date(trip.arrival_time);
-                        const duration = getDuration(trip.departure_time, trip.arrival_time);
                         return (
                             <Link href={`/trips/${trip.id}`} key={trip.id} className="block bg-white p-4 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer">
                                 <div className="grid grid-cols-5 gap-4 items-center">
@@ -181,27 +172,23 @@ const TripsListPage: NextPage = () => {
                                             <p className="text-sm text-gray-600">{trip.origin}</p>
                                         </div>
                                         <div className="flex-grow text-center">
-                                            <div className="text-xs text-gray-500">{duration}</div>
-                                            <div className="bg-gray-200 h-0.5 w-full relative my-1">
-                                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gray-500"></div>
-                                                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gray-500"></div>
-                                            </div>
-                                            <Moon size={14} className="mx-auto text-gray-500"/>
+                                            <div className="bg-gray-200 h-0.5 w-full"></div>
                                         </div>
                                         <div className="text-left">
-                                            <p className="font-bold text-lg">{formatTime(arrival)}</p>
-                                            <p className="text-sm text-gray-600">{trip.destination}</p>
+                                            <p className="font-bold text-lg">{trip.destination}</p>
                                         </div>
                                     </div>
                                     {/* Driver Info */}
                                     <div className="col-span-1 text-center">
-                                        {trip.profiles && (
-                                            <div className="flex flex-col items-center space-y-1">
-                                                <img src={trip.profiles.photo_url || '/default-avatar.svg'} alt={trip.profiles.full_name} className="w-10 h-10 rounded-full" />
-                                                <span className="text-sm font-medium">{trip.profiles.full_name}</span>
-                                                <div className="flex items-center text-sm">
-                                                    <Star size={14} className="text-yellow-500 mr-1"/> {trip.profiles.rating?.toFixed(1) || 'New'}
-                                                </div>
+                                        {trip.profiles ? (
+                                            <div className="flex flex-col items-center justify-center">
+                                                <img src={trip.profiles.photo_url || '/default-avatar.png'} alt={trip.profiles.full_name} className="w-10 h-10 rounded-full mb-1" />
+                                                <p className="text-sm text-gray-700">{trip.profiles.full_name}</p>
+                                            </div>
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center">
+                                                <div className="w-10 h-10 rounded-full mb-1 bg-gray-200"></div>
+                                                <p className="text-sm text-gray-500">No driver</p>
                                             </div>
                                         )}
                                     </div>
@@ -215,9 +202,8 @@ const TripsListPage: NextPage = () => {
                         )
                     })
                 ) : (
-                    <div className="text-center py-12 bg-gray-100 rounded-lg">
-                        <h3 className="text-xl font-semibold">No trips match your search.</h3>
-                        <p className="text-gray-500 mt-2">Try adjusting your filters or check back later.</p>
+                    <div className="text-center py-10">
+                      <p className="text-gray-500">No trips found. Try adjusting your search filters.</p>
                     </div>
                 )}
                 </div>

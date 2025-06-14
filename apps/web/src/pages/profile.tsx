@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { useSession } from '../lib/SessionContext';
-import { supabase } from '../lib/supabaseClient';
+import { useSession, useSupabaseClient, useUser } from '@supabase/auth-helpers-react';
 import { CheckCircle, ChevronRight, MessageSquare, Music, PawPrint, PlusCircle, Wind } from 'lucide-react';
 
 const Profile: NextPage = () => {
-  const { session } = useSession();
+  const session = useSession();
+  const user = useUser();
+  const supabase = useSupabaseClient();
   const router = useRouter();
 
   const [name, setName] = useState('');
@@ -20,8 +21,8 @@ const Profile: NextPage = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (session) {
-      const { user_metadata } = session.user;
+    if (user) {
+      const { user_metadata } = user;
       setName(user_metadata.name || '');
       setLastName(user_metadata.last_name || '');
       setBio(user_metadata.bio || '');
@@ -29,7 +30,7 @@ const Profile: NextPage = () => {
       if (user_metadata.avatar_url) {
         downloadImage(user_metadata.avatar_url);
       }
-    } else {
+    } else if (!user && session === null) { // only redirect if no user and session has loaded
       router.push('/login');
     }
   }, [session, router]);
@@ -54,12 +55,23 @@ const Profile: NextPage = () => {
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${session!.user.id}/${fileName}`;
+      const filePath = `${user!.id}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file);
       if (uploadError) throw uploadError;
 
+      // Update the public profiles table
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ photo_url: filePath })
+        .eq('id', user!.id);
+
+      if (updateError) throw updateError;
+
+      // Also update the user's auth metadata for consistency
+            // Also update the user's auth metadata for consistency
       await supabase.auth.updateUser({ data: { avatar_url: filePath } });
+
       downloadImage(filePath);
       setMessage('Avatar updated successfully!');
     } catch (error) {
@@ -69,17 +81,17 @@ const Profile: NextPage = () => {
     }
   }
 
-  if (!session || !session.user) return null;
+  if (!session || !user) return null;
 
-  const completion = (Number(!!name) + Number(!!avatarUrl) + Number(!!session.user.email)) / 3 * 100;
+  const completion = (Number(!!name) + Number(!!avatarUrl) + Number(!!user.email)) / 3 * 100;
 
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
-        <Link href={session ? `/user/${session.user.id}` : '#'}>
+        <Link href={user ? `/user/${user.id}` : '#'}>
           <div className="flex items-center justify-between p-4 bg-white rounded-t-lg shadow-sm cursor-pointer hover:bg-gray-50">
             <div className="flex items-center space-x-4">
-              <img src={avatarUrl || `https://avatar.vercel.sh/${session.user.email}`} alt="Avatar" className="w-20 h-20 rounded-full" />
+              <img src={avatarUrl || `https://avatar.vercel.sh/${user.email}`} alt="Avatar" className="w-20 h-20 rounded-full" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{`${name} ${lastName}`.trim() || 'New User'}</h1>
                 <p className="text-gray-500">Intermediate</p>
@@ -112,7 +124,7 @@ const Profile: NextPage = () => {
             <h2 className="text-xl font-bold mb-4">Verify your profile</h2>
             <ul className="space-y-3">
               <li className="flex items-center space-x-3 text-blue-600"><PlusCircle className="w-5 h-5" /><span>Verify identification</span></li>
-              <li className="flex items-center space-x-3 text-green-600"><CheckCircle className="w-5 h-5" /><span>{session.user.email}</span></li>
+              <li className="flex items-center space-x-3 text-green-600"><CheckCircle className="w-5 h-5" /><span>{user.email}</span></li>
               <li className="flex items-center space-x-3 text-green-600"><CheckCircle className="w-5 h-5" /><span>+525522501196 (placeholder)</span></li>
             </ul>
           </div>

@@ -1,12 +1,13 @@
 import Link from 'next/link';
-import { useSession } from '../lib/SessionContext';
-import { supabase } from '../lib/supabaseClient';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const Navbar = () => {
-  const { session } = useSession();
+  const session = useSession();
+  const supabase = useSupabaseClient();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) console.log('Error logging out:', error.message);
   };
 
   return (

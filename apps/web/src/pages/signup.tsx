@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { NextPage } from 'next';
-import { supabase } from '../lib/supabaseClient';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 const Signup: NextPage = () => {
   const [name, setName] = useState('');
@@ -9,6 +9,7 @@ const Signup: NextPage = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const supabase = useSupabaseClient();
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

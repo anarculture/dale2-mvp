@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useSession } from '../../../lib/SessionContext';
-import { supabase } from '../../../lib/supabaseClient';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { ChevronLeft, X } from 'lucide-react';
 
 const fieldLabels: { [key: string]: string } = {
@@ -16,7 +15,8 @@ const fieldLabels: { [key: string]: string } = {
 const EditFieldPage: NextPage = () => {
   const router = useRouter();
   const { field } = router.query;
-  const { session } = useSession();
+  const session = useSession();
+  const supabase = useSupabaseClient();
 
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(false);

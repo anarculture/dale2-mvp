@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { useSession } from '../../lib/SessionContext';
-import { supabase } from '../../lib/supabaseClient';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+
 import AutocompleteInput from '../../components/AutocompleteInput';
 
 const NewTrip: NextPage = () => {
-  const { session } = useSession();
+  const session = useSession();
+  const supabase = useSupabaseClient();
   const router = useRouter();
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
@@ -21,9 +22,15 @@ const NewTrip: NextPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Redirect if not logged in
+  useEffect(() => {
+    // Redirect if not logged in
+    if (!session) {
+      router.push('/login');
+    }
+  }, [session, router]);
+
+  // Render null while redirecting or if there's no session
   if (!session) {
-    router.push('/login');
     return null;
   }
 
@@ -68,7 +75,7 @@ const NewTrip: NextPage = () => {
     <div className="max-w-2xl mx-auto p-4 sm:p-6 lg:p-8">
       <h1 className="text-3xl font-bold text-gray-800 mb-6">Post a New Trip</h1>
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-8 rounded-lg shadow-md">
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label htmlFor="origin" className="block text-sm font-medium text-gray-700">Origin</label>

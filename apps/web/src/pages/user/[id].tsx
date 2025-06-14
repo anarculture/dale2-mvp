@@ -1,10 +1,7 @@
 import { GetServerSideProps, NextPage } from 'next';
 import { CheckCircle, MessageSquare, Music, PawPrint, Search, Star, Wind } from 'lucide-react';
 import { calculateAge } from '../../utils/helpers';
-import { supabase } from '../../lib/supabaseClient';
 
-// NOTE: This interface assumes you have a public `profiles` table
-// with `email_verified` and `phone_verified` boolean columns.
 interface Profile {
   id: string;
   name: string;
@@ -12,8 +9,10 @@ interface Profile {
   bio: string;
   birth_date: string;
   avatar_url: string;
-  email_verified: boolean;
-  phone_verified: boolean;
+
+  email_confirmed_at: string;
+  phone_confirmed_at: string;
+
 }
 
 interface PublicProfilePageProps {
@@ -99,6 +98,8 @@ const PublicProfilePage: NextPage<PublicProfilePageProps> = ({ profile, error })
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params!;
 
+  const supabase = createServerSupabaseClient(context);
+
   // This call requires a public `profiles` table with RLS enabled.
   const { data: profile, error } = await supabase
     .from('profiles')
@@ -106,20 +107,16 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     .eq('id', id as string)
     .single();
 
-  if (error && !profile) {
-    console.error('Error fetching public profile:', error.message);
+  if (error || !profile) {
+    console.warn(`Profile not found for id: ${id}`, error);
     return {
-      props: {
-        profile: null,
-        error: 'Could not fetch user profile. Please ensure a public `profiles` table exists and Row Level Security is configured correctly.',
-      },
+      notFound: true, // Return a 404 page
     };
   }
 
   return {
     props: {
       profile,
-      error: null,
     },
   };
 };
