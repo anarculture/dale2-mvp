@@ -9,6 +9,7 @@ const NewTrip: NextPage = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const router = useRouter();
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [departureTime, setDepartureTime] = useState('');
@@ -23,41 +24,45 @@ const NewTrip: NextPage = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Redirect if not logged in
-    if (!session) {
-      router.push('/login');
+    if (session === undefined) {
+      setIsLoadingSession(true); // Still loading
+    } else {
+      setIsLoadingSession(false); // Loaded (either session object or null)
+      if (session === null) {
+        router.push('/login'); // Not logged in, redirect
+      }
     }
   }, [session, router]);
 
-  // Render null while redirecting or if there's no session
-  if (!session) {
-    return null;
+  // Render loading indicator or null while session is loading or redirecting
+  if (isLoadingSession || (session === null && !isLoadingSession) ) {
+    // if session is null and not loading, it means redirect is in progress or should happen
+    return <div>Loading session...</div>; // Or a spinner, or null
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
 
-    if (!session.user) {
-      setError('You must be logged in to post a trip.');
+    // Explicit check for session and session.user
+    if (!session || !session.user) {
+      setError('You must be logged in to post a trip. Please refresh or log in again.');
       setLoading(false);
       return;
     }
 
+    setLoading(true);
+    setError(null);
+
     const { data, error } = await supabase.from('trips').insert([
       {
         driver_id: session.user.id,
-        origin,
-        destination,
-        departure_time: departureTime,
+        origin: origin,
+        destination: destination,
+        departure_datetime: departureTime,
         available_seats: availableSeats,
-        price,
-        vehicle_info: vehicleInfo,
-        description,
-        automatic_booking: automaticBooking,
-        smoking_allowed: smokingAllowed,
-        pets_allowed: petsAllowed,
+        price_per_seat: price,
+        vehicle_details: vehicleInfo,
+        notes: description
       },
     ]).select();
 
@@ -113,34 +118,7 @@ const NewTrip: NextPage = () => {
           <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
         </div>
 
-        <fieldset className="space-y-4">
-          <legend className="text-sm font-medium text-gray-700">Trip Preferences</legend>
-          <div className="flex items-start">
-            <div className="flex items-center h-5">
-              <input id="automaticBooking" name="automaticBooking" type="checkbox" checked={automaticBooking} onChange={(e) => setAutomaticBooking(e.target.checked)} className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-            </div>
-            <div className="ml-3 text-sm">
-              <label htmlFor="automaticBooking" className="font-medium text-gray-700">Automatic Booking</label>
-              <p className="text-gray-500">Automatically approve passengers who book.</p>
-            </div>
-          </div>
-          <div className="flex items-start">
-            <div className="flex items-center h-5">
-              <input id="smokingAllowed" name="smokingAllowed" type="checkbox" checked={smokingAllowed} onChange={(e) => setSmokingAllowed(e.target.checked)} className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-            </div>
-            <div className="ml-3 text-sm">
-              <label htmlFor="smokingAllowed" className="font-medium text-gray-700">Smoking Allowed</label>
-            </div>
-          </div>
-          <div className="flex items-start">
-            <div className="flex items-center h-5">
-              <input id="petsAllowed" name="petsAllowed" type="checkbox" checked={petsAllowed} onChange={(e) => setPetsAllowed(e.target.checked)} className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded" />
-            </div>
-            <div className="ml-3 text-sm">
-              <label htmlFor="petsAllowed" className="font-medium text-gray-700">Pets Allowed</label>
-            </div>
-          </div>
-        </fieldset>
+
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 

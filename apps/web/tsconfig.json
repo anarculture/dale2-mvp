@@ -3,9 +3,22 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": [
+        "src/*"
+      ],
+      "@dale/auth": ["../../packages/auth/src"],
+      "@dale/auth/*": ["../../packages/auth/src/*"],
+      "@dale/core": ["../../packages/core/src"],
+      "@dale/core/*": ["../../packages/core/src/*"]
+    },
+    "strictNullChecks": true
   },
-  "include": ["src", "next-env.d.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src",
+    "next-env.d.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

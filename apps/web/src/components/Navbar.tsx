@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { PlusCircle } from 'lucide-react';
 
 const Navbar = () => {
   const session = useSession();
@@ -22,6 +23,10 @@ const Navbar = () => {
           <div className="flex items-center space-x-4">
             {session ? (
               <>
+                <Link href="/trips/new" className="flex items-center text-gray-700 hover:text-blue-600 font-medium">
+                  <PlusCircle className="w-5 h-5 mr-1" /> 
+                  Publicar un viaje 
+                </Link>
                 <Link href="/profile" className="text-gray-700 hover:text-blue-600 font-medium">
                   Profile
                 </Link>
