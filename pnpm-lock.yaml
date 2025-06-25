@@ -148,6 +148,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.0.0
         version: 2.50.0
+      tsup:
+        specifier: ^8.0.0
+        version: 8.5.0(jiti@1.21.7)(postcss@8.5.4)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0)
     devDependencies:
       '@dale/config':
         specifier: workspace:*
@@ -155,9 +158,6 @@ importers:
       eslint:
         specifier: ^8.57.0
         version: 8.57.1
-      tsup:
-        specifier: ^8.0.0
-        version: 8.5.0(jiti@1.21.7)(postcss@8.5.4)(tsx@4.20.2)(typescript@5.8.3)(yaml@2.8.0)
       typescript:
         specifier: ^5.3.3
         version: 5.8.3

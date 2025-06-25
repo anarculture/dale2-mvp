@@ -3,6 +3,7 @@ import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import type { NextPage, GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 
 import { Star, MessageSquare, AlertTriangle, Clock, MapPin, Car } from 'lucide-react';
 
@@ -199,22 +200,39 @@ export default TripDetailsPage;
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params!;
-
-  const { data, error } = await supabase
+  
+  // Create authenticated Supabase client for server-side
+  const supabase = createServerSupabaseClient(context);
+  
+  // First, get the trip
+  const { data: tripData, error: tripError } = await supabase
     .from('trips')
-    .select('*, profiles(id, full_name, photo_url, rating, total_reviews)')
+    .select('*')
     .eq('id', id)
     .single();
 
-  if (error || !data) {
+  if (tripError || !tripData) {
     return {
       notFound: true, // This will render the 404 page
     };
   }
+  
+  // Then get the driver's profile
+  const { data: profileData, error: profileError } = await supabase
+    .from('profiles')
+    .select('id, full_name, photo_url, rating, total_reviews')
+    .eq('id', tripData.driver_id)
+    .single();
+    
+  // Combine the data
+  const tripWithProfile = {
+    ...tripData,
+    profiles: profileData || null
+  };
 
   return {
     props: {
-      trip: data,
+      trip: tripWithProfile,
     },
   };
 };

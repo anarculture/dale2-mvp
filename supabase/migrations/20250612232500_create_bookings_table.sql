@@ -5,10 +5,10 @@ create table if not exists public.bookings (
     passenger_id uuid references public.profiles(id) on delete cascade not null,
     status text not null default 'confirmed', -- consider using an ENUM in production
     seats_booked integer not null default 1,
-    total_price numeric(10,2) generated always as (seats_booked * (select price from public.trips where id = trip_id)) stored,
+    total_price numeric(10,2) not null,
     created_at timestamp with time zone default timezone('utc', now()) not null,
-    updated_at timestamp with time zone default timezone('utc', now()) not null,
-    review_id uuid references public.reviews(id)
+    updated_at timestamp with time zone default timezone('utc', now()) not null
+    
 );
 
 -- Indexes for performance
