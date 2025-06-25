@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { NextPage } from 'next';
+import { useRouter } from 'next/router';
+import { useSession } from '@supabase/auth-helpers-react';
 import { supabase } from '../lib/supabaseClient';
 
 const Signup: NextPage = () => {
@@ -9,6 +11,14 @@ const Signup: NextPage = () => {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const session = useSession();
+
+  useEffect(() => {
+    if (session) {
+      router.push('/'); // Redirect to homepage if already logged in
+    }
+  }, [session, router]);
 
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,6 +47,11 @@ const Signup: NextPage = () => {
     }
     setLoading(false);
   };
+
+  // Prevent rendering the form if session exists (and redirect is in progress)
+  if (session) {
+    return <div>Loading...</div>; // Or a spinner, or null
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center">
