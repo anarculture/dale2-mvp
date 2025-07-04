@@ -61,7 +61,7 @@ const NewTrip: NextPage = () => {
         departure_datetime: departureTime,
         available_seats: availableSeats,
         price_per_seat: price,
-        vehicle_details: vehicleInfo,
+        vehicle_info: vehicleInfo,
         notes: description
       },
     ]).select();

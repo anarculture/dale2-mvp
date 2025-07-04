@@ -1,7 +1,7 @@
 -- First, let's create a test user if they don't exist
 INSERT INTO auth.users (id, instance_id, email, email_confirmed_at, encrypted_password, created_at, updated_at, last_sign_in_at, raw_app_meta_data, raw_user_meta_data, is_super_admin, confirmation_token, email_change, email_change_token_new, recovery_token)
 VALUES (
-  '00000000-0000-0000-0000-000000000001', 
+  '00000000-0000-0000-0000-000000000001',
   '00000000-0000-0000-0000-000000000000',
   'testdriver@example.com',
   NOW(),
@@ -36,7 +36,7 @@ ON CONFLICT (id) DO NOTHING;
 -- Insert sample trips from Caracas to Valencia for today
 -- Using future times starting from 1 hour from now
 WITH trip_times AS (
-  SELECT 
+  SELECT
     (NOW() + (n * INTERVAL '30 minutes') + INTERVAL '1 hour') as departure_time,
     (NOW() + (n * INTERVAL '30 minutes') + INTERVAL '3 hours') as arrival_time
   FROM generate_series(0, 4) as n
@@ -63,7 +63,7 @@ INSERT INTO public.trips (
   created_at,
   updated_at
 )
-SELECT 
+SELECT
   '00000000-0000-0000-0000-000000000001', -- Test Driver ID
   'Caracas',
   'Valencia',
@@ -71,12 +71,12 @@ SELECT
   arrival_time,
   CASE WHEN n % 2 = 0 THEN 3 ELSE 4 END, -- Alternate between 3 and 4 seats
   5.00 + (n * 0.50), -- Vary the price slightly
-  CASE 
+  CASE
     WHEN n % 3 = 0 THEN 'Toyota Corolla, Black, ABC-1234'
     WHEN n % 3 = 1 THEN 'Honda Civic, White, XYZ-5678'
     ELSE 'Chevrolet Aveo, Red, DEF-9012'
   END,
-  CASE 
+  CASE
     WHEN n % 2 = 0 THEN 'Direct trip with AC. No stops unless necessary.'
     ELSE 'Comfortable ride with music. Small detours possible.'
   END,
@@ -92,7 +92,7 @@ SELECT
   NOW(),
   NOW()
 FROM (
-  SELECT 
+  SELECT
     ROW_NUMBER() OVER () as n,
     departure_time,
     arrival_time
@@ -100,7 +100,7 @@ FROM (
 ) as numbered_trips;
 
 -- Output the inserted trips for verification
-SELECT 
+SELECT
   id,
   departure_datetime at time zone 'UTC' at time zone 'America/Caracas' as local_departure,
   origin,

@@ -10,7 +10,7 @@ interface Trip {
     available_seats: number;
     price_per_seat: number;
     status: 'scheduled' | 'completed' | 'cancelled' | string;
-    vehicle_details?: string | null;
+    vehicle_info?: string | null;
     notes?: string | null;
 }
 

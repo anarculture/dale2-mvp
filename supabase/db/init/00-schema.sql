@@ -25,6 +25,7 @@ CREATE TABLE public.trips (
   departure_time timestamptz NOT NULL,
   available_seats integer NOT NULL CHECK (available_seats >= 0),
   price numeric(10, 2) NOT NULL CHECK (price >= 0)
+  vehicle_info NOTNULL
 );
 
 -- Bookings Table
