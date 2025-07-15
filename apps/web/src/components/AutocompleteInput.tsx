@@ -36,11 +36,11 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onValueCha
         city.toLowerCase().includes(inputValue.toLowerCase())
       );
       setSuggestions(filteredSuggestions);
-      setShowSuggestions(true);
     } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
+      // Show all cities when input is empty
+      setSuggestions(venezuelanCities);
     }
+    setShowSuggestions(true);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -58,10 +58,14 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onValueCha
         onChange={handleChange}
         placeholder={placeholder}
         className={className || 'w-full p-3 border border-gray-300 rounded-md text-gray-800'}
-        onFocus={() => value && setShowSuggestions(true)}
+        onFocus={() => {
+          // Show all cities when input is focused
+          setSuggestions(venezuelanCities);
+          setShowSuggestions(true);
+        }}
         required={required}
       />
-      {showSuggestions && suggestions.length > 0 && (
+      {showSuggestions && (
         <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
           {suggestions.map((suggestion, index) => (
             <li
