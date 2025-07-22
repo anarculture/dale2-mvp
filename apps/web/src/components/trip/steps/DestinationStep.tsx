@@ -97,6 +97,28 @@ export default function DestinationStep({ onNext, onBack }: DestinationStepProps
       {errors.destination && (
         <p className="mt-1 text-sm text-red-600">{errors.destination.message}</p>
       )}
+
+      <div className="mt-6 space-y-3">
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!watch('destination')}
+          className={`w-full py-3 px-4 ${watch('destination') ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'} text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+        >
+          Continuar
+        </button>
+        {!watch('destination') && (
+          <p className="text-sm text-center text-amber-600">Selecciona una ciudad de destino para continuar</p>
+        )}
+        
+        <button
+          type="button"
+          onClick={onBack}
+          className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Atrás
+        </button>
+      </div>
     </div>
   );
 }

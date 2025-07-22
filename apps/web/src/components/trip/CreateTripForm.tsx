@@ -8,7 +8,8 @@ import { useRouter } from 'next/router';
 import OriginStep from './steps/OriginStep';
 import DestinationStep from './steps/DestinationStep';
 import DateTimeStep from './steps/DateTimeStep';
-import DetailsStep from './steps/DetailsStep';
+import SeatsStep from './steps/SeatsStep';
+import PriceStep from './steps/PriceStep';
 
 const tripFormSchema = z.object({
   origin: z.string().min(1, 'Origin is required'),
@@ -16,8 +17,6 @@ const tripFormSchema = z.object({
   departure_datetime: z.string().min(1, 'Departure date and time is required'),
   available_seats: z.number().int().positive('Must have at least 1 seat'),
   price_per_seat: z.number().positive('Price must be greater than 0'),
-  vehicle_details: z.string().optional(),
-  notes: z.string().optional(),
 }).refine((data) => data.origin !== data.destination, {
   message: 'Origin and destination must be different',
   path: ['destination'],
@@ -29,8 +28,6 @@ export type TripFormData = {
   departure_datetime: string;
   available_seats: number;
   price_per_seat: number;
-  vehicle_details?: string;
-  notes?: string;
 };
 
 export default function CreateTripForm() {
@@ -41,16 +38,13 @@ export default function CreateTripForm() {
   const router = useRouter();
 
   const methods = useForm<TripFormData>({
-    // Remove zodResolver for now to fix type issues
-    // We'll add validation later
+    resolver: zodResolver(tripFormSchema) as any, // Type assertion to fix compatibility issue
     defaultValues: {
       origin: '',
       destination: '',
       departure_datetime: '',
       available_seats: 1,
       price_per_seat: 0,
-      vehicle_details: '',
-      notes: '',
     },
   });
 
@@ -96,10 +90,14 @@ export default function CreateTripForm() {
       component: <DateTimeStep onNext={() => setCurrentStep(3)} onBack={() => setCurrentStep(1)} />,
     },
     {
-      title: 'Detalles',
-      component: <DetailsStep onBack={() => setCurrentStep(2)} />,
+      title: 'Pasajeros',
+      component: <SeatsStep onNext={() => setCurrentStep(4)} onBack={() => setCurrentStep(2)} />,
     },
-  ], []);
+    {
+      title: 'Precio',
+      component: <PriceStep onNext={handleSubmit(onSubmit)} onBack={() => setCurrentStep(3)} />,
+    }
+  ], [handleSubmit, onSubmit]);
 
   // Ensure we don't try to access steps before they're ready
   if (steps.length === 0) {
@@ -135,45 +133,19 @@ export default function CreateTripForm() {
           {currentStepData.component}
         </div>
 
-        <div className="flex justify-between pt-4">
-          <div>
-            {currentStep > 0 && (
-              <button
-                type="button"
-                onClick={() => setCurrentStep(currentStep - 1)}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Atrás
-              </button>
-            )}
+        {/* Error message */}
+        {submitError && (
+          <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {submitError}
           </div>
-          <div className="flex space-x-3">
-            <button
-              type="button"
-              onClick={() => router.push('/')}
-              className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Cancel
-            </button>
-            {currentStep < steps.length - 1 ? (
-              <button
-                type="button"
-                onClick={() => setCurrentStep(currentStep + 1)}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Siguiente
-              </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Creando...' : 'Publicar viaje'}
-              </button>
-            )}
+        )}
+        
+        {/* Loading indicator */}
+        {isSubmitting && (
+          <div className="mt-4 flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
-        </div>
+        )}
       </FormProvider>
     </form>
   );

@@ -1,6 +1,16 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Trip } from '../types/trip';
 
+export interface CreateTripData {
+  origin: string;
+  destination: string;
+  departure_datetime: string; // ISO string
+  available_seats: number;
+  price_per_seat: number;
+  vehicle_details?: string;
+  notes?: string;
+}
+
 export interface SearchTripsParams {
   origin?: string;
   destination?: string;
@@ -43,4 +53,26 @@ export async function searchTrips(
   }
 
   return { data: data as Trip[], error: null };
+}
+
+export async function createTrip(
+  supabase: SupabaseClient,
+  tripData: CreateTripData
+): Promise<{ data: Trip | null; error: any }> {
+  const { data, error } = await supabase
+    .from('trips')
+    .insert([{
+      ...tripData,
+      status: 'scheduled',
+      departure_datetime: new Date(tripData.departure_datetime).toISOString()
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating trip:', error.message);
+    return { data: null, error };
+  }
+
+  return { data: data as Trip, error: null };
 }

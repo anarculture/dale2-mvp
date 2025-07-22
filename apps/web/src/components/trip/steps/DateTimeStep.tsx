@@ -1,202 +1,279 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import type { TripFormData } from '../CreateTripForm';
+import { format, addDays, isToday, isSameDay, parseISO, setHours, setMinutes } from 'date-fns';
+import { es } from 'date-fns/locale';
+import { Calendar, Clock, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 
 type DateTimeStepProps = {
   onNext: () => void;
   onBack: () => void;
 };
 
-export default function DateTimeStep({ onNext, onBack }: DateTimeStepProps) {
-  const { register, setValue, watch, formState: { errors } } = useFormContext<TripFormData>();
-  
-  // Get the current date and time in the format required by the date and time inputs
-  const today = new Date();
-  const formattedDate = today.toISOString().split('T')[0];
-  const formattedTime = today.toTimeString().slice(0, 5);
-  
-  // State to track the selected date and time separately
-  const [selectedDate, setSelectedDate] = useState(formattedDate);
-  const [selectedTime, setSelectedTime] = useState(formattedTime);
-  
-  // State for custom time picker
-  const [showHourPicker, setShowHourPicker] = useState(false);
-  const [showMinutePicker, setShowMinutePicker] = useState(false);
-  const [hour, setHour] = useState(today.getHours());
-  const [minute, setMinute] = useState(today.getMinutes());
-  
-  // Ref for the time picker dropdown
-  const timePickerRef = useRef<HTMLDivElement>(null);
-  
-  // Generate hours and minutes arrays
-  const hours = Array.from({ length: 24 }, (_, i) => i);
-  const minutes = Array.from({ length: 60 }, (_, i) => i);
-  
-  // Watch the departure_datetime field
-  const currentDateTime = watch('departure_datetime');
-  
-  // Handle date change
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value;
-    setSelectedDate(newDate);
-    updateDateTime(newDate, selectedTime);
-  };
-  
-  // Handle hour selection
-  const handleHourSelect = (h: number) => {
-    setHour(h);
-    setShowHourPicker(false);
-    setShowMinutePicker(true); // Show minute picker after selecting hour
-    
-    // Format the new time
-    const newTime = `${h.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-    setSelectedTime(newTime);
-    updateDateTime(selectedDate, newTime);
-  };
-  
-  // Handle minute selection
-  const handleMinuteSelect = (m: number) => {
-    setMinute(m);
-    setShowMinutePicker(false);
-    
-    // Format the new time
-    const newTime = `${hour.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
-    setSelectedTime(newTime);
-    updateDateTime(selectedDate, newTime);
-  };
-  
-  // Close time picker when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (timePickerRef.current && !timePickerRef.current.contains(event.target as Node)) {
-        setShowHourPicker(false);
-        setShowMinutePicker(false);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-  
-  // Update the combined datetime field
-  const updateDateTime = (date: string, time: string) => {
-    const combinedDateTime = `${date}T${time}:00`;
-    setValue('departure_datetime', combinedDateTime);
-  };
-  
-  // Handle next button click
-  const handleNext = () => {
-    // Validate that we have a date and time before proceeding
-    if (selectedDate && selectedTime) {
-      onNext();
-    }
-  };
+type DatePickerStep = 'date' | 'time';
 
+export default function DateTimeStep({ onNext, onBack }: DateTimeStepProps) {
+  const { setValue, watch, formState: { errors } } = useFormContext<TripFormData>();
+  const departureDatetime = watch('departure_datetime');
+  
+  // Track which step we're on (date or time selection)
+  const [currentStep, setCurrentStep] = useState<DatePickerStep>('date');
+
+  // Initialize with current date or existing value
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (departureDatetime) {
+      return new Date(departureDatetime);
+    }
+    const now = new Date();
+    return now;
+  });
+
+  const [selectedTime, setSelectedTime] = useState<string>(() => {
+    if (departureDatetime) {
+      const date = new Date(departureDatetime);
+      return format(date, 'HH:mm');
+    }
+    const now = new Date();
+    // Round to nearest 10 minutes
+    const minutes = Math.ceil(now.getMinutes() / 10) * 10;
+    return format(setMinutes(now, minutes >= 60 ? 0 : minutes), 'HH:mm');
+  });
+
+  // Set minimum date to today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Update form value when date or time changes
+  useEffect(() => {
+    if (selectedDate && selectedTime) {
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const dateWithTime = setHours(setMinutes(selectedDate, minutes), hours);
+      setValue('departure_datetime', dateWithTime.toISOString());
+    }
+  }, [selectedDate, selectedTime, setValue]);
+  
+  // Check if we have valid date and time selected
+  const isDateTimeValid = Boolean(selectedDate && selectedTime);
+
+  // Generate calendar data
+  const generateCalendarData = () => {
+    const currentDate = new Date();
+    const months = [];
+    
+    // Generate current month and next month
+    for (let i = 0; i < 2; i++) {
+      const monthDate = new Date(currentDate);
+      monthDate.setMonth(currentDate.getMonth() + i);
+      monthDate.setDate(1); // First day of month
+      
+      const monthName = format(monthDate, 'MMMM', { locale: es });
+      const daysInMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0).getDate();
+      const firstDayOfMonth = monthDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+      
+      // Adjust for week starting on Monday (0 = Monday, 6 = Sunday)
+      const adjustedFirstDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+      
+      const days = [];
+      
+      // Add empty cells for days before the first day of the month
+      for (let j = 0; j < adjustedFirstDay; j++) {
+        days.push(null);
+      }
+      
+      // Add days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(monthDate.getFullYear(), monthDate.getMonth(), day);
+        // Only include today and future dates
+        if (date >= today) {
+          days.push(date);
+        } else {
+          days.push(null); // Past dates are null but keep the grid structure
+        }
+      }
+      
+      months.push({
+        name: monthName,
+        capitalizedName: monthName.charAt(0).toUpperCase() + monthName.slice(1),
+        days
+      });
+    }
+    
+    return months;
+  };
+  
+  const calendarData = generateCalendarData();
+  
+  // Generate time slots in 10-minute intervals
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = 5; hour < 24; hour++) {
+      for (let minute = 0; minute < 60; minute += 10) {
+        slots.push(format(new Date().setHours(hour, minute), 'HH:mm'));
+      }
+    }
+    return slots;
+  };
+  
+  const timeSlots = generateTimeSlots();
+  
+  // Handle date selection
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setCurrentStep('time');
+  };
+  
+  // Handle time selection
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+    handleNext();
+  };
+  
+  const handleNext = () => {
+    onNext();
+  };
+  
+  // Format day names
+  const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-gray-900">¿Cuándo sales?</h2>
-        <p className="mt-1 text-sm text-gray-500">
-          Selecciona la fecha y hora de salida de tu viaje
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Date picker */}
-        <div>
-          <label htmlFor="trip-date" className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha
-          </label>
-          <input
-            type="date"
-            id="trip-date"
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            min={formattedDate} // Prevent selecting dates in the past
-            value={selectedDate}
-            onChange={handleDateChange}
-          />
-        </div>
-
-        {/* Custom Time picker */}
-        <div ref={timePickerRef} className="relative">
-          <label htmlFor="trip-time" className="block text-sm font-medium text-gray-700 mb-1">
-            Hora
-          </label>
-          <button
-            type="button"
-            id="trip-time"
-            className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-left bg-white"
-            onClick={() => {
-              setShowHourPicker(true);
-              setShowMinutePicker(false);
-            }}
-          >
-            {selectedTime}
-          </button>
+      {currentStep === 'date' ? (
+        <>
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-semibold text-gray-800">¿Qué día sales?</h2>
+          </div>
           
-          {/* Hour selector */}
-          {showHourPicker && (
-            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              <div className="grid grid-cols-4 gap-1 p-2">
-                {hours.map((h) => (
-                  <button
-                    key={h}
-                    type="button"
-                    className={`p-2 text-center rounded hover:bg-blue-100 ${h === hour ? 'bg-blue-200' : ''}`}
-                    onClick={() => handleHourSelect(h)}
-                  >
-                    {h.toString().padStart(2, '0')}
-                  </button>
-                ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {calendarData.map((month, monthIndex) => (
+              <div key={monthIndex} className="calendar-month">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-700 capitalize">{month.capitalizedName}</h3>
+                  {monthIndex === 0 && calendarData.length > 1 && (
+                    <button 
+                      type="button" 
+                      className="text-blue-600 hover:text-blue-800 flex items-center"
+                      onClick={() => setCurrentStep('time')}
+                    >
+                      <span className="mr-1">Agosto</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-7 gap-1">
+                  {/* Day names */}
+                  {dayNames.map((day, i) => (
+                    <div key={i} className="text-center text-xs font-medium text-gray-500 py-2">
+                      {day}
+                    </div>
+                  ))}
+                  
+                  {/* Calendar days */}
+                  {month.days.map((date, i) => {
+                    if (date === null) {
+                      return <div key={`empty-${i}`} className="h-10"></div>;
+                    }
+                    
+                    const isSelected = isSameDay(date, selectedDate);
+                    const isCurrentDay = isToday(date);
+                    
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        disabled={date < today}
+                        className={`h-10 w-full flex items-center justify-center rounded-full text-sm
+                          ${isSelected ? 'bg-blue-600 text-white' : ''}
+                          ${!isSelected && isCurrentDay ? 'border border-blue-600 text-blue-600' : ''}
+                          ${!isSelected && !isCurrentDay ? 'hover:bg-gray-100' : ''}
+                          ${date < today ? 'text-gray-300 cursor-not-allowed' : 'cursor-pointer'}
+                        `}
+                        onClick={() => handleDateSelect(date)}
+                      >
+                        {format(date, 'd')}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="text-center mb-6">
+            <button 
+              type="button" 
+              className="absolute left-0 top-0 p-4 text-blue-600 hover:text-blue-800 flex items-center"
+              onClick={() => setCurrentStep('date')}
+            >
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              <span>Volver</span>
+            </button>
+            <h2 className="text-2xl font-semibold text-gray-800">¿A qué hora recogerás a los pasajeros?</h2>
+          </div>
+          
+          <div className="relative">
+            <div className="flex justify-center mb-4">
+              <div className="relative w-full max-w-xs">
+                <button 
+                  type="button" 
+                  className="w-full text-4xl font-semibold text-center py-4 px-8 border-2 border-blue-500 text-blue-600 rounded-full flex items-center justify-center"
+                >
+                  {selectedTime}
+                  <ChevronDown className="w-6 h-6 ml-2" />
+                </button>
               </div>
             </div>
-          )}
-          
-          {/* Minute selector */}
-          {showMinutePicker && (
-            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              <div className="grid grid-cols-4 gap-1 p-2">
-                {minutes.map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    className={`p-2 text-center rounded hover:bg-blue-100 ${m === minute ? 'bg-blue-200' : ''}`}
-                    onClick={() => handleMinuteSelect(m)}
-                  >
-                    {m.toString().padStart(2, '0')}
-                  </button>
-                ))}
+            
+            <div className="h-64 overflow-y-auto border border-gray-200 rounded-lg">
+              <div className="grid grid-cols-4 sm:grid-cols-6">
+                {timeSlots.map((time, i) => {
+                  const isSelected = time === selectedTime;
+                  
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      className={`py-3 text-center text-sm border-b border-r border-gray-100
+                        ${isSelected ? 'bg-blue-600 text-white' : 'hover:bg-gray-50'}
+                      `}
+                      onClick={() => handleTimeSelect(time)}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
-        </div>
-      </div>
-
-      {/* Date and time preview */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-800">Vista previa</h3>
-        <p className="mt-1 text-lg font-semibold text-blue-900">
-          {selectedDate && selectedTime ? (
-            new Date(`${selectedDate}T${selectedTime}`).toLocaleString('es-VE', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })
-          ) : (
-            'Selecciona fecha y hora'
-          )}
-        </p>
-      </div>
-
-      <input type="hidden" {...register('departure_datetime')} />
-      {errors.departure_datetime && (
-        <p className="mt-1 text-sm text-red-600">{errors.departure_datetime.message}</p>
+          </div>
+        </>
       )}
+      {/* Navigation buttons */}
+      <div className="mt-8 space-y-3">
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!isDateTimeValid}
+          className={`w-full py-3 px-4 ${isDateTimeValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'} text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+        >
+          Continuar
+        </button>
+        
+        {!isDateTimeValid && (
+          <p className="text-sm text-center text-amber-600">
+            {!selectedDate ? 'Selecciona una fecha' : 'Selecciona una hora'} para continuar
+          </p>
+        )}
+        
+        <button
+          type="button"
+          onClick={onBack}
+          className="w-full py-3 px-4 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Atrás
+        </button>
+      </div>
     </div>
   );
 }

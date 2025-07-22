@@ -22,6 +22,19 @@ async function searchTrips(supabase, params) {
   }
   return { data, error: null };
 }
+async function createTrip(supabase, tripData) {
+  const { data, error } = await supabase.from("trips").insert([{
+    ...tripData,
+    status: "scheduled",
+    departure_datetime: new Date(tripData.departure_datetime).toISOString()
+  }]).select().single();
+  if (error) {
+    console.error("Error creating trip:", error.message);
+    return { data: null, error };
+  }
+  return { data, error: null };
+}
 export {
+  createTrip,
   searchTrips
 };

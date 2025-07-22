@@ -20,7 +20,7 @@ VALUES (
 ON CONFLICT (id) DO NOTHING;
 
 -- Create a profile for the test user if it doesn't exist
-INSERT INTO public.profiles (id, full_name, phone, avatar_url, created_at, updated_at)
+INSERT INTO public.profiles (id, full_name, phone, photo_url, created_at, updated_at)
 VALUES (
   '00000000-0000-0000-0000-000000000001',
   'Test Driver',

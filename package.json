@@ -18,5 +18,10 @@
     "tsx": "^4.20.2",
     "turbo": "^2.0.4"
   },
-  "packageManager": "pnpm@9.1.0"
+  "packageManager": "pnpm@9.1.0",
+  "dependencies": {
+    "@hookform/resolvers": "^5.1.1",
+    "react-hook-form": "^7.60.0",
+    "zod": "^4.0.0"
+  }
 }

@@ -20,6 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/index.ts
 var index_exports = {};
 __export(index_exports, {
+  createTrip: () => createTrip,
   searchTrips: () => searchTrips
 });
 module.exports = __toCommonJS(index_exports);
@@ -48,7 +49,20 @@ async function searchTrips(supabase, params) {
   }
   return { data, error: null };
 }
+async function createTrip(supabase, tripData) {
+  const { data, error } = await supabase.from("trips").insert([{
+    ...tripData,
+    status: "scheduled",
+    departure_datetime: new Date(tripData.departure_datetime).toISOString()
+  }]).select().single();
+  if (error) {
+    console.error("Error creating trip:", error.message);
+    return { data: null, error };
+  }
+  return { data, error: null };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  createTrip,
   searchTrips
 });

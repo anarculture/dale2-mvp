@@ -14,6 +14,15 @@ interface Trip {
     notes?: string | null;
 }
 
+interface CreateTripData {
+    origin: string;
+    destination: string;
+    departure_datetime: string;
+    available_seats: number;
+    price_per_seat: number;
+    vehicle_details?: string;
+    notes?: string;
+}
 interface SearchTripsParams {
     origin?: string;
     destination?: string;
@@ -24,5 +33,9 @@ params: SearchTripsParams): Promise<{
     data: Trip[] | null;
     error: any;
 }>;
+declare function createTrip(supabase: SupabaseClient, tripData: CreateTripData): Promise<{
+    data: Trip | null;
+    error: any;
+}>;
 
-export { type SearchTripsParams, type Trip, searchTrips };
+export { type CreateTripData, type SearchTripsParams, type Trip, createTrip, searchTrips };

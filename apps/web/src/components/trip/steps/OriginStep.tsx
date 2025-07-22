@@ -7,9 +7,10 @@ type OriginStepProps = {
 };
 
 export default function OriginStep({ onNext }: OriginStepProps) {
-  const { register, setValue, formState: { errors } } = useFormContext<TripFormData>();
+  const { register, setValue, watch, formState: { errors } } = useFormContext<TripFormData>();
   const [searchQuery, setSearchQuery] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const origin = watch('origin');
   
   // Mock location suggestions - in a real app, these would come from a geocoding API
   const locationSuggestions = [
@@ -93,6 +94,20 @@ export default function OriginStep({ onNext }: OriginStepProps) {
       {errors.origin && (
         <p className="mt-1 text-sm text-red-600">{errors.origin.message}</p>
       )}
+      
+      <div className="mt-6">
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={!origin}
+          className={`w-full py-3 px-4 ${origin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-300 cursor-not-allowed'} text-white font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2`}
+        >
+          Continuar
+        </button>
+        {!origin && (
+          <p className="mt-2 text-sm text-center text-amber-600">Selecciona una ciudad de origen para continuar</p>
+        )}
+      </div>
     </div>
   );
 }

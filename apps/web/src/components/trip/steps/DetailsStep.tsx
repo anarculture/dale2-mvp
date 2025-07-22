@@ -17,64 +17,7 @@ export default function DetailsStep({ onBack }: DetailsStepProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Available seats */}
-        <div>
-          <label htmlFor="available-seats" className="block text-sm font-medium text-gray-700 mb-1">
-            Asientos disponibles
-          </label>
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <input
-              type="number"
-              id="available-seats"
-              min="1"
-              max="10"
-              {...register('available_seats', { 
-                valueAsNumber: true,
-                required: 'Debes indicar cuántos asientos ofreces'
-              })}
-              className="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="1"
-            />
-          </div>
-          {errors.available_seats && (
-            <p className="mt-1 text-sm text-red-600">{errors.available_seats.message}</p>
-          )}
-        </div>
-
-        {/* Price per seat */}
-        <div>
-          <label htmlFor="price-per-seat" className="block text-sm font-medium text-gray-700 mb-1">
-            Precio por asiento (USD)
-          </label>
-          <div className="mt-1 relative rounded-md shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm">$</span>
-            </div>
-            <input
-              type="number"
-              id="price-per-seat"
-              min="0"
-              step="0.01"
-              {...register('price_per_seat', { 
-                valueAsNumber: true,
-                required: 'Debes indicar un precio por asiento'
-              })}
-              className="block w-full pl-7 pr-12 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="0.00"
-              aria-describedby="price-currency"
-            />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <span className="text-gray-500 sm:text-sm" id="price-currency">
-                USD
-              </span>
-            </div>
-          </div>
-          {errors.price_per_seat && (
-            <p className="mt-1 text-sm text-red-600">{errors.price_per_seat.message}</p>
-          )}
-        </div>
-      </div>
+      {/* No price or seats inputs here anymore - they're in their own steps */}
 
       {/* Vehicle details */}
       <div>
