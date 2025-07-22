@@ -25,20 +25,20 @@ const Home: NextPage = () => {
           style={{ backgroundImage: "url('/hero-background.svg')" }}
         ></div>
         <div className="relative max-w-5xl mx-auto px-4 py-20 sm:px-6 lg:px-8 z-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-center">Thousands of trips at the best price</h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-center">Miles de viajes al mejor precio</h1>
           <div className="mt-8 max-w-4xl mx-auto bg-white p-4 rounded-lg shadow-lg">
             <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-center">
               <div className="md:col-span-4 grid grid-cols-1 md:grid-cols-4 items-center rounded-lg shadow-sm border border-gray-300">
                 <AutocompleteInput
                   value={origin}
                   onValueChange={setOrigin}
-                  placeholder="Leaving from..."
+                  placeholder="Saliendo desde..."
                   className="w-full p-3 border-r border-gray-300 rounded-l-lg focus:outline-none text-gray-800"
                 />
                 <AutocompleteInput
                   value={destination}
                   onValueChange={setDestination}
-                  placeholder="Going to..."
+                  placeholder="Hacia..."
                   className="w-full p-3 border-r border-gray-300 focus:outline-none text-gray-800"
                 />
                 <input
@@ -52,11 +52,11 @@ const Home: NextPage = () => {
                   min="1"
                   value={passengers}
                   onChange={(e) => setPassengers(Number(e.target.value))}
-                  placeholder="1 passenger"
+                  placeholder="1 pasajero"
                   className="w-full p-3 focus:outline-none text-gray-800 rounded-r-lg"
                 />
               </div>
-              <button type="submit" className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 font-semibold h-full">Search</button>
+              <button type="submit" className="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 font-semibold h-full">Buscar</button>
             </form>
           </div>
         </div>
@@ -68,18 +68,18 @@ const Home: NextPage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
             <div className="flex flex-col items-center">
               <Tag className="h-12 w-12 text-blue-500 mb-4" />
-              <h3 className="text-xl font-bold">Thousands of trips at the best price</h3>
-              <p className="mt-2 text-gray-600">Wherever you're going, find your ideal trip at a very low price.</p>
+              <h3 className="text-xl font-bold">Miles de viajes al mejor precio</h3>
+              <p className="mt-2 text-gray-600">Dondequiera que vayas, encuentra tu viaje ideal a un precio muy bajo.</p>
             </div>
             <div className="flex flex-col items-center">
               <ShieldCheck className="h-12 w-12 text-blue-500 mb-4" />
-              <h3 className="text-xl font-bold">Travel with confidence</h3>
-              <p className="mt-2 text-gray-600">We make sure to know each of our members. We verify profiles, ratings, and IDs so you know who you're traveling with.</p>
+              <h3 className="text-xl font-bold">Viaja con confianza</h3>
+              <p className="mt-2 text-gray-600">Nos aseguramos de conocer a cada uno de nuestros miembros. Verificamos perfiles, calificaciones e identificaciones para que sepas con quién viajas.</p>
             </div>
             <div className="flex flex-col items-center">
               <Zap className="h-12 w-12 text-blue-500 mb-4" />
-              <h3 className="text-xl font-bold">Scroll, click, and go!</h3>
-              <p className="mt-2 text-gray-600">Booking a trip has never been so easy! Thanks to our simple app powered by great technology, you can book a trip nearby in a matter of minutes.</p>
+              <h3 className="text-xl font-bold">¡Desplázate, haz clic y listo!</h3>
+              <p className="mt-2 text-gray-600">¡Reservar un viaje nunca ha sido tan fácil! Gracias a nuestra sencilla aplicación impulsada por gran tecnología, puedes reservar un viaje cercano en cuestión de minutos.</p>
             </div>
           </div>
         </div>
@@ -92,13 +92,13 @@ const Home: NextPage = () => {
             <div className="order-2 md:order-1">
               {/* Placeholder for illustration */}
               <div className="bg-gray-200 h-64 w-full rounded-lg flex items-center justify-center">
-                <span className="text-gray-500">Illustration</span>
+                <span className="text-gray-500">Ilustración</span>
               </div>
             </div>
             <div className="order-1 md:order-2 text-center md:text-left">
-              <h2 className="text-3xl font-bold">Help us protect you from scams</h2>
-              <p className="mt-4 text-gray-600">At Dale, we strive to make our platform as secure as possible. But when a scam occurs, we want you to know exactly how to avoid and report it. Follow our tips and help us protect you.</p>
-              <button className="mt-6 bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-900">More information</button>
+              <h2 className="text-3xl font-bold">Ayúdanos a protegerte de estafas</h2>
+              <p className="mt-4 text-gray-600">En Dale, nos esforzamos por hacer nuestra plataforma lo más segura posible. Pero cuando ocurre una estafa, queremos que sepas exactamente cómo evitarla y reportarla. Sigue nuestros consejos y ayúdanos a protegerte.</p>
+              <button className="mt-6 bg-gray-800 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-900">Más información</button>
             </div>
           </div>
         </div>
@@ -109,14 +109,14 @@ const Home: NextPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div className="text-center md:text-left">
-              <h2 className="text-3xl font-bold">Where do you want to drive?</h2>
-              <p className="mt-4 text-lg">We make this trip more economical for you.</p>
-              <button onClick={() => router.push('/trips/new')} className="mt-6 bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600">Post a trip</button>
+              <h2 className="text-3xl font-bold">¿A dónde quieres conducir?</h2>
+              <p className="mt-4 text-lg">Hacemos este viaje más económico para ti.</p>
+              <button onClick={() => router.push('/trips/new')} className="mt-6 bg-blue-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-600">Publicar un viaje</button>
             </div>
             <div>
               {/* Placeholder for illustration */}
               <div className="bg-gray-700 h-64 w-full rounded-lg flex items-center justify-center">
-                <span className="text-gray-400">Illustration</span>
+                <span className="text-gray-400">Ilustración</span>
               </div>
             </div>
           </div>
@@ -126,7 +126,7 @@ const Home: NextPage = () => {
       {/* Popular Routes Section */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-8">Where do you want to travel?</h2>
+          <h2 className="text-3xl font-bold text-center mb-8">¿A dónde quieres viajar?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div onClick={() => router.push('/trips?origin=Caracas&destination=Maracaibo')} className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md cursor-pointer transition-shadow">
               <p className="font-semibold">Caracas → Maracaibo</p>
@@ -139,7 +139,7 @@ const Home: NextPage = () => {
             </div>
           </div>
           <div className="text-center mt-8">
-            <a href="/trips" className="text-blue-500 font-semibold hover:underline">See our most popular trips</a>
+            <a href="/trips" className="text-blue-500 font-semibold hover:underline">Ver nuestros viajes más populares</a>
           </div>
         </div>
       </section>
@@ -147,27 +147,27 @@ const Home: NextPage = () => {
       {/* FAQ Section */}
       <section className="bg-gray-800 text-white py-16">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-10">Frequently asked questions about shared trips</h2>
+          <h2 className="text-3xl font-bold text-center mb-10">Preguntas frecuentes sobre viajes compartidos</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
             <div>
-              <h4 className="font-bold mb-2">How do I book a trip in a shared car?</h4>
-              <p className="text-gray-400">You can book a trip in a shared car on our app or website. Just search for your destination, choose the date you want to travel, and select the shared trip that best suits you.</p>
+              <h4 className="font-bold mb-2">¿Cómo reservo un viaje en un coche compartido?</h4>
+              <p className="text-gray-400">Puedes reservar un viaje en un coche compartido en nuestra aplicación o sitio web. Solo busca tu destino, elige la fecha en la que quieres viajar y selecciona el viaje compartido que mejor se adapte a ti.</p>
             </div>
             <div>
-              <h4 className="font-bold mb-2">How do I offer a trip in a shared car?</h4>
-              <p className="text-gray-400">Offering a trip in a shared car is easy. To publish your trip, use your app or website. Indicate your departure and arrival points, the date and time of your trip.</p>
+              <h4 className="font-bold mb-2">¿Cómo ofrezco un viaje en un coche compartido?</h4>
+              <p className="text-gray-400">Ofrecer un viaje en un coche compartido es fácil. Para publicar tu viaje, usa tu aplicación o sitio web. Indica tus puntos de salida y llegada, la fecha y hora de tu viaje.</p>
             </div>
             <div>
-              <h4 className="font-bold mb-2">How do I cancel my trip in a shared car?</h4>
-              <p className="text-gray-400">If your plans change, you can always cancel your trip from the "Your Trips" section. The sooner you cancel, the better.</p>
+              <h4 className="font-bold mb-2">¿Cómo cancelo mi viaje en un coche compartido?</h4>
+              <p className="text-gray-400">Si tus planes cambian, siempre puedes cancelar tu viaje desde la sección "Tus Viajes". Cuanto antes canceles, mejor.</p>
             </div>
             <div>
-              <h4 className="font-bold mb-2">What are the advantages of traveling by shared car?</h4>
-              <p className="text-gray-400">There are many advantages to traveling by shared car. Shared car trips are often much cheaper than other modes of transport, especially for long distances.</p>
+              <h4 className="font-bold mb-2">¿Cuáles son las ventajas de viajar en coche compartido?</h4>
+              <p className="text-gray-400">Hay muchas ventajas de viajar en coche compartido. Los viajes en coche compartido suelen ser mucho más baratos que otros medios de transporte, especialmente para largas distancias.</p>
             </div>
           </div>
           <div className="text-center mt-12">
-            <button className="bg-blue-500 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-600">Read more in our Help Center</button>
+            <button className="bg-blue-500 text-white font-bold py-3 px-8 rounded-full hover:bg-blue-600">Leer más en nuestro Centro de Ayuda</button>
           </div>
         </div>
       </section>
@@ -213,7 +213,7 @@ const Home: NextPage = () => {
             </div>
           </div>
           <div className="mt-8 border-t border-gray-700 pt-8 md:flex md:items-center md:justify-between">
-            <p className="text-base text-gray-400">&copy; 2025 Dale. All rights reserved.</p>
+            <p className="text-base text-gray-400">&copy; 2025 Dale. Todos los derechos reservados.</p>
             <a href="#" className="mt-4 md:mt-0 text-base text-gray-400 hover:text-white">Términos y condiciones</a>
           </div>
         </div>
