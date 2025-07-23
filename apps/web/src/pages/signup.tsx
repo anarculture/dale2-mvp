@@ -40,9 +40,9 @@ const Signup: NextPage = () => {
       setError(error.message);
     } else if (data.user) {
       if (data.user.identities?.length === 0) {
-        setError('User with this email already exists.');
+        setError('Ya existe un usuario con este correo electrónico.');
       } else {
-        setMessage('Success! Please check your email for a confirmation link.');
+        setMessage('¡Éxito! Por favor revisa tu correo electrónico para el enlace de confirmación.');
       }
     }
     setLoading(false);
@@ -50,17 +50,17 @@ const Signup: NextPage = () => {
 
   // Prevent rendering the form if session exists (and redirect is in progress)
   if (session) {
-    return <div>Loading...</div>; // Or a spinner, or null
+    return <div>Cargando...</div>; // Or a spinner, or null
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center">
       <div className="max-w-md w-full bg-white p-8 border border-gray-200 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Create an Account</h1>
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Crear una Cuenta</h1>
         <form onSubmit={handleSignup}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-              Full Name
+              Nombre Completo
             </label>
             <input
               id="name"
@@ -68,13 +68,13 @@ const Signup: NextPage = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-3 py-2 border rounded-lg text-gray-700 focus:outline-none focus:border-blue-500"
-              placeholder="Your Name"
+              placeholder="Tu Nombre"
               required
             />
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-              Email Address
+              Correo Electrónico
             </label>
             <input
               id="email"
@@ -89,7 +89,7 @@ const Signup: NextPage = () => {
           </div>
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Password
+              Contraseña
             </label>
             <input
               id="password"
@@ -107,7 +107,7 @@ const Signup: NextPage = () => {
             disabled={loading}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline disabled:bg-blue-300"
           >
-            {loading ? 'Signing up...' : 'Sign Up'}
+            {loading ? 'Registrando...' : 'Registrarse'}
           </button>
         </form>
         {message && <p className="mt-4 text-center text-green-500">{message}</p>}

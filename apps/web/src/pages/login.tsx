@@ -33,7 +33,7 @@ const Login: NextPage = () => {
     if (error) {
       setError(error.message);
     } else {
-      setMessage('Logged in successfully!');
+      setMessage('¡Sesión iniciada con éxito!');
       router.push('/');
     }
     setLoading(false);
@@ -41,17 +41,17 @@ const Login: NextPage = () => {
 
   // Prevent rendering the login form if session exists (and redirect is in progress)
   if (session) {
-    return <div>Loading...</div>; // Or a spinner, or null
+    return <div>Cargando...</div>; // Or a spinner, or null
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center">
       <div className="max-w-md w-full bg-white p-8 border border-gray-200 rounded-lg shadow-sm">
-        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Login</h1>
+        <h1 className="text-2xl font-bold text-center text-gray-800 mb-6">Iniciar Sesión</h1>
         <form onSubmit={handleLogin}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
-              Email Address
+              Correo Electrónico
             </label>
             <input
               id="email"
@@ -66,7 +66,7 @@ const Login: NextPage = () => {
           </div>
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
-              Password
+              Contraseña
             </label>
             <input
               id="password"
@@ -84,7 +84,7 @@ const Login: NextPage = () => {
             disabled={loading}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline disabled:bg-blue-300"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
         </form>
         {message && <p className="mt-4 text-center text-green-500">{message}</p>}
