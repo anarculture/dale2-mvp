@@ -14,6 +14,14 @@ export default function DestinationStep({ onNext, onBack }: DestinationStepProps
   
   // Get the origin to ensure it's not selected as destination
   const origin = watch('origin');
+  const destination = watch('destination');
+  
+  // Update searchQuery when destination changes
+  useEffect(() => {
+    if (destination) {
+      setSearchQuery(destination);
+    }
+  }, [destination]);
   
   // Mock location suggestions - in a real app, these would come from a geocoding API
   const locationSuggestions = [
@@ -27,7 +35,8 @@ export default function DestinationStep({ onNext, onBack }: DestinationStepProps
 
   const handleSelectLocation = (location: string) => {
     setValue('destination', location);
-    onNext();
+    setSearchQuery(location);
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -51,7 +60,12 @@ export default function DestinationStep({ onNext, onBack }: DestinationStepProps
             className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Busca una ciudad"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (!e.target.value) {
+                setValue('destination', '');
+              }
+            }}
             autoComplete="off"
             onFocus={() => setIsDropdownOpen(true)}
             onBlur={() => {

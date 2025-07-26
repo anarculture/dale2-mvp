@@ -12,6 +12,13 @@ export default function OriginStep({ onNext }: OriginStepProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const origin = watch('origin');
   
+  // Update searchQuery when origin changes
+  useEffect(() => {
+    if (origin) {
+      setSearchQuery(origin);
+    }
+  }, [origin]);
+  
   // Mock location suggestions - in a real app, these would come from a geocoding API
   const locationSuggestions = [
     { id: 1, name: 'Caracas, Distrito Capital' },
@@ -24,7 +31,8 @@ export default function OriginStep({ onNext }: OriginStepProps) {
 
   const handleSelectLocation = (location: string) => {
     setValue('origin', location);
-    onNext();
+    setSearchQuery(location);
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -46,9 +54,14 @@ export default function OriginStep({ onNext }: OriginStepProps) {
           <input
             type="text"
             className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
- placeholder="Busca una ciudad"
+            placeholder="Busca una ciudad"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (!e.target.value) {
+                setValue('origin', '');
+              }
+            }}
             autoComplete="off"
             onFocus={() => setIsDropdownOpen(true)}
             onBlur={() => {

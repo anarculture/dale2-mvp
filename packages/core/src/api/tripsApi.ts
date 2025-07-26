@@ -59,10 +59,25 @@ export async function createTrip(
   supabase: SupabaseClient,
   tripData: CreateTripData
 ): Promise<{ data: Trip | null; error: any }> {
+  // Get the current user's ID
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  
+  if (userError) {
+    console.error('Error getting user:', userError.message);
+    return { data: null, error: userError };
+  }
+  
+  if (!userData.user) {
+    const authError = new Error('User not authenticated');
+    console.error('Error creating trip:', authError.message);
+    return { data: null, error: authError };
+  }
+
   const { data, error } = await supabase
     .from('trips')
     .insert([{
       ...tripData,
+      driver_id: userData.user.id, // Set the driver_id to the current user's ID
       status: 'scheduled',
       departure_datetime: new Date(tripData.departure_datetime).toISOString()
     }])
