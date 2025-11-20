@@ -17,6 +17,8 @@ const tripFormSchema = z.object({
   departure_datetime: z.string().min(1, 'Departure date and time is required'),
   available_seats: z.number().int().positive('Must have at least 1 seat'),
   price_per_seat: z.number().positive('Price must be greater than 0'),
+  vehicle_details: z.string().optional(),
+  notes: z.string().optional(),
 }).refine((data) => data.origin !== data.destination, {
   message: 'Origin and destination must be different',
   path: ['destination'],
@@ -28,6 +30,8 @@ export type TripFormData = {
   departure_datetime: string;
   available_seats: number;
   price_per_seat: number;
+  vehicle_details?: string;
+  notes?: string;
 };
 
 export default function CreateTripForm() {
@@ -38,13 +42,16 @@ export default function CreateTripForm() {
   const router = useRouter();
 
   const methods = useForm<TripFormData>({
-    resolver: zodResolver(tripFormSchema) as any, // Type assertion to fix compatibility issue
+    // @ts-expect-error zod v4 types differ from resolver typings; runtime is compatible.
+    resolver: zodResolver(tripFormSchema),
     defaultValues: {
       origin: '',
       destination: '',
       departure_datetime: '',
       available_seats: 1,
       price_per_seat: 0,
+      vehicle_details: '',
+      notes: '',
     },
   });
 
