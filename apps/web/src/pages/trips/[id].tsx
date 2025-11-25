@@ -9,12 +9,31 @@ import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
 import { Star, MessageSquare, AlertTriangle, Clock, MapPin, Car } from 'lucide-react';
 
 // Define the type for a driver's profile
+import { useState } from 'react';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import type { NextPage, GetServerSideProps } from 'next';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
+import { createServerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+
+import { Star, MessageSquare, Clock, MapPin, Car } from 'lucide-react';
+
+// Define the type for a driver's profile
 interface Profile {
   id: string;
   full_name: string;
   photo_url: string;
   rating: number;
   total_reviews: number;
+}
+
+interface Booking {
+  seats_booked: number;
+  profiles: {
+    full_name: string;
+    photo_url: string;
+  };
 }
 
 // Define the type for a trip, including the driver's profile
@@ -30,6 +49,7 @@ interface Trip {
   vehicle_details: string;
   notes: string;
   profiles: Profile;
+  bookings: Booking[];
   formatted_date?: {
     time: string;
     date: string;
@@ -48,7 +68,7 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation(['common', 'trips']);
 
   const driver = trip.profiles;
   // Use the pre-formatted date from server or create a safe date
@@ -58,20 +78,20 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
   
   // Format date for display (client-side fallback)
   const formatTime = (date: Date) => {
-    if (isNaN(date.getTime())) return t('trips.timeUnavailable', 'Hora no disponible');
+    if (isNaN(date.getTime())) return t('trips:timeUnavailable', 'Hora no disponible');
     // Use current language for date formatting
     const locale = i18n.language === 'en' ? 'en-US' : 'es-VE';
     return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: false });
   };
   
   const formatDate = (date: Date) => {
-    if (isNaN(date.getTime())) return t('trips.dateUnavailable', 'Fecha no disponible');
+    if (isNaN(date.getTime())) return t('trips:dateUnavailable', 'Fecha no disponible');
     const locale = i18n.language === 'en' ? 'en-US' : 'es-VE';
     return date.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
   };
   
   const formatFullDateTime = (date: Date) => {
-    if (isNaN(date.getTime())) return t('trips.dateTimeUnavailable', 'Fecha y hora no disponibles');
+    if (isNaN(date.getTime())) return t('trips:dateTimeUnavailable', 'Fecha y hora no disponibles');
     const locale = i18n.language === 'en' ? 'en-US' : 'es-VE';
     return date.toLocaleDateString(locale, { 
       weekday: 'long', 
@@ -96,7 +116,7 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
               </svg>
-              {t('common.back')}
+              {t('common:back')}
             </Link>
             <h1 className="text-2xl font-bold text-gray-900">
               {formatDate(departureDate)}
@@ -104,7 +124,7 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
             <p className="text-gray-600">{trip.origin} → {trip.destination}</p>
           </div>
           <div className="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full self-start">
-            {trip.available_seats} {t('trips.availableSeats')}
+            {trip.available_seats} {t('trips:availableSeats')}
           </div>
         </div>
 
@@ -121,17 +141,17 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
                   <div className="space-y-1">
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>
-                      <p className="text-sm font-medium text-gray-900">{trip.origin || t('trips.origin')}</p>
+                      <p className="text-sm font-medium text-gray-900">{trip.origin || t('trips:origin')}</p>
                     </div>
                     <div className="h-6 border-l-2 border-gray-200 ml-1"></div>
                     <div className="flex items-center">
                       <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
-                      <p className="text-sm font-medium text-gray-900">{trip.destination || t('trips.destination')}</p>
+                      <p className="text-sm font-medium text-gray-900">{trip.destination || t('trips:destination')}</p>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center text-sm text-gray-500">
                     <Clock className="w-4 h-4 mr-1.5 text-gray-400" />
-                    <span>{formattedTime} • {formatDate(departureDate)} • {trip.available_seats} {t('trips.seats')}</span>
+                    <span>{formattedTime} • {formatDate(departureDate)} • {trip.available_seats} {t('trips:seats')}</span>
                   </div>
                 </div>
               </div>
@@ -140,7 +160,7 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
             {/* Driver Card */}
             {driver && (
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('trips.driver')}</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('trips:driver')}</h2>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
                     <img 
@@ -154,14 +174,14 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
                         <div className="flex items-center">
                           <Star className="w-4 h-4 text-yellow-400 mr-1" />
                           <span className="text-sm text-gray-700">
-                            {driver.rating ? driver.rating.toFixed(1) : t('trips.new')}
+                            {driver.rating ? driver.rating.toFixed(1) : t('trips:new')}
                           </span>
                         </div>
                         {driver.total_reviews > 0 && (
                           <span className="mx-2 text-gray-300">•</span>
                         )}
                         <span className="text-sm text-gray-500">
-                          {driver.total_reviews || ''} {driver.total_reviews === 1 ? t('trips.trip') : t('trips.trips')}
+                          {driver.total_reviews || ''} {driver.total_reviews === 1 ? t('trips:trip') : t('trips:trips')}
                         </span>
                       </div>
                     </div>
@@ -172,20 +192,48 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
                 </div>
               </div>
             )}
+            
+            {/* Passengers Section (Visible to Driver Only) */}
+            {session?.user?.id === trip.driver_id && (
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('trips:passengers')}</h2>
+                {trip.bookings && trip.bookings.length > 0 ? (
+                  <ul className="space-y-4">
+                    {trip.bookings.map((booking, index) => (
+                      <li key={index} className="flex items-center space-x-3">
+                        <img 
+                          src={booking.profiles.photo_url || '/default-avatar.jpg'} 
+                          alt={booking.profiles.full_name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div>
+                          <p className="font-medium text-gray-800">{booking.profiles.full_name}</p>
+                          <p className="text-sm text-gray-500">
+                            {booking.seats_booked} {booking.seats_booked > 1 ? t('trips:seats') : t('trips:passenger')}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">{t('trips:noBookingsYet', 'No bookings for this trip yet.')}</p>
+                )}
+              </div>
+            )}
 
             {/* Vehicle Info */}
             <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('trips.vehicle')}</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('trips:vehicle')}</h2>
               <div className="flex items-center">
                 <div className="p-3 bg-gray-100 rounded-lg mr-4">
                   <Car className="w-6 h-6 text-gray-600" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-900">
-                    {trip.vehicle_details || t('trips.noVehicleInfo')}
+                    {trip.vehicle_details || t('trips:noVehicleInfo')}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    {trip.available_seats} {t('trips.availableSeats')}
+                    {trip.available_seats} {t('trips:availableSeats')}
                   </p>
                 </div>
               </div>
@@ -194,7 +242,7 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
             {/* Notes */}
             {trip.notes && (
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('trips.aboutTrip')}</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('trips:aboutTrip')}</h2>
                 <p className="text-gray-600">{trip.notes}</p>
               </div>
             )}
@@ -204,14 +252,14 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">{t('trips.bookTrip')}</h2>
-                <div className="text-2xl font-bold text-blue-600">${price.toFixed(2)} <span className="text-sm font-normal text-gray-500">{t('trips.perSeat')}</span></div>
+                <h2 className="text-xl font-bold text-gray-900">{t('trips:bookTrip')}</h2>
+                <div className="text-2xl font-bold text-blue-600">${price.toFixed(2)} <span className="text-sm font-normal text-gray-500">{t('trips:perSeat')}</span></div>
               </div>
               
               <div className="space-y-4">
                 <div>
                   <label htmlFor="passengers" className="block text-sm font-medium text-gray-700 mb-1">
-                    {t('trips.passengers')}
+                    {t('trips:passengers')}
                   </label>
                   <select
                     id="passengers"
@@ -222,7 +270,7 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
                   >
                     {Array.from({ length: Math.min(10, trip.available_seats) }, (_, i) => (
                       <option key={i + 1} value={i + 1}>
-                        {i + 1} {i === 0 ? t('trips.passenger') : t('trips.passengers')}
+                        {i + 1} {i === 0 ? t('trips:passenger') : t('trips:passengers')}
                       </option>
                     ))}
                   </select>
@@ -230,11 +278,11 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
 
                 <div className="pt-2 border-t border-gray-200">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">{t('trips.pricePerSeat')}</span>
+                    <span className="text-sm text-gray-600">{t('trips:pricePerSeat')}</span>
                     <span className="font-medium">${price.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center font-medium">
-                    <span>{t('common.total')}</span>
+                    <span>{t('common:total')}</span>
                     <span className="text-lg">${totalPrice}</span>
                   </div>
                 </div>
@@ -246,13 +294,13 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
                     setBookingSuccess(false);
                     
                     if (!session?.user?.id) {
-                      setBookingError(t('trips.errors.loginRequired'));
+                      setBookingError(t('trips:errors.loginRequired'));
                       setBookingLoading(false);
                       return;
                     }
                     
                     if (bookingSeats > trip.available_seats) {
-                      setBookingError(t('trips.errors.notEnoughSeats'));
+                      setBookingError(t('trips:errors.notEnoughSeats'));
                       setBookingLoading(false);
                       return;
                     }
@@ -279,7 +327,7 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
                       setTimeout(() => setBookingSuccess(false), 3000);
                     } catch (error) {
                       console.error('Booking error:', error);
-                      setBookingError(t('trips.errors.bookingFailed'));
+                      setBookingError(t('trips:errors.bookingFailed'));
                     } finally {
                       setBookingLoading(false);
                     }
@@ -292,10 +340,10 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
                   } transition-colors`}
                 >
                   {bookingLoading
-                    ? t('common.processing')
+                    ? t('common:processing')
                     : trip.available_seats < 1
-                    ? t('trips.noSeatsAvailable')
-                    : t('trips.requestBooking')}
+                    ? t('trips:noSeatsAvailable')
+                    : t('trips:requestBooking')}
                 </button>
 
                 {bookingError && (
@@ -306,12 +354,12 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
 
                 {bookingSuccess && (
                   <div className="mt-3 text-sm text-green-700 bg-green-50 p-3 rounded-lg">
-                    {t('trips.bookingSuccess')}
+                    {t('trips:bookingSuccess')}
                   </div>
                 )}
 
                 <p className="mt-4 text-xs text-gray-500 text-center">
-                  {t('trips.termsNotice')}
+                  {t('trips:termsNotice')}
                 </p>
               </div>
             </div>
@@ -324,13 +372,11 @@ const TripDetailsPage: NextPage<PageProps> = ({ trip: initialTrip }) => {
 
 export default TripDetailsPage;
 
+
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const { id } = context.params!;
-
-  // Create authenticated Supabase client for server-side
   const supabase = createServerSupabaseClient(context);
 
-  // First, get the trip
   const { data: tripData, error: tripError } = await supabase
     .from('trips')
     .select('*')
@@ -338,61 +384,41 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     .single();
 
   if (tripError || !tripData) {
-    return {
-      notFound: true, // This will render the 404 page
-    };
+    return { notFound: true };
   }
 
-  // Then get the driver's profile
   const { data: profileData, error: profileError } = await supabase
     .from('profiles')
     .select('id, full_name, photo_url, rating, total_reviews')
     .eq('id', tripData.driver_id)
     .single();
 
-  // Format the date on the server
-  const formatServerDate = (dateString: string | Date) => {
-    try {
-      const date = new Date(dateString);
-      return isNaN(date.getTime()) ? new Date() : date;
-    } catch {
-      return new Date();
-    }
+  const { data: bookingsData, error: bookingsError } = await supabase
+    .from('bookings')
+    .select('seats_booked, profiles (full_name, photo_url)')
+    .eq('trip_id', tripData.id);
+
+  if (bookingsError) {
+    console.error('Error fetching bookings:', bookingsError);
+    // You might want to handle this error more gracefully
+  }
+
+  const departureDate = new Date(tripData.departure_datetime);
+  const formattedDate = {
+    time: departureDate.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    date: departureDate.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/New_York' }),
   };
 
-  // Get the departure date
-  const departureDate = formatServerDate(tripData.departure_datetime);
-  
-  // Format date for consistent rendering
-  const formatDate = (date: Date) => ({
-    time: date.toLocaleTimeString('es-VE', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      hour12: false
-    }),
-    date: date.toLocaleDateString('es-VE', { 
-      weekday: 'long', 
-      day: 'numeric', 
-      month: 'long',
-      year: 'numeric',
-      timeZone: 'America/New_York' // Ensure consistent timezone
-    })
-  });
-
-  const formattedDate = formatDate(departureDate);
-  
-  // Combine and normalize the data
   const tripWithProfile = {
     ...tripData,
-    // Ensure all required fields have default values
     origin: tripData.origin || '',
     destination: tripData.destination || '',
     departure_time: departureDate.toISOString(),
     available_seats: Number(tripData.available_seats) || 0,
     price: Number(tripData.price_per_seat) || 0,
     profiles: profileData || null,
-    // Add pre-formatted date strings
-    formatted_date: formattedDate
+    bookings: bookingsData || [],
+    formatted_date: formattedDate,
   };
 
   return {
@@ -401,6 +427,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     },
   };
 };
+
 
 // Add proper type for the return value
 export const config = {
