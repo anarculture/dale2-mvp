@@ -82,17 +82,31 @@
       "bookingFailed": "Booking could not be completed. Please try again."
     }
   },
-  "profile": {
-    "title": "Profile",
-    "fullName": "Full Name",
-    "phoneNumber": "Phone Number",
-    "email": "Email",
-    "bio": "Bio",
-    "updateProfile": "Update Profile",
-    "uploadPhoto": "Upload Photo",
-    "changePassword": "Change Password",
-    "deleteAccount": "Delete Account",
-    "profileUpdated": "Profile updated successfully",
-    "profilePictureUpdated": "Profile picture updated successfully"
-  }
-}
+      "profile": {
+        "title": "Profile",
+        "fullName": "Full Name",
+        "phoneNumber": "Phone Number",
+        "email": "Email",
+        "bio": "Bio",
+        "updateProfile": "Update Profile",
+        "uploadPhoto": "Upload Photo",
+        "changePassword": "Change Password",
+        "deleteAccount": "Delete Account",
+        "profileUpdated": "Profile updated successfully",
+        "profilePictureUpdated": "Profile picture updated successfully",
+        "avatarUpdateSuccess": "Avatar updated successfully!",
+        "myBookings": "My Bookings",
+        "noBookings": "You have no bookings yet.",
+        "totalPrice": "Total Price: ${{price}}",
+        "seatsBooked": "Seats booked: {{seats}}",
+        "confirmCancelBooking": "Are you sure you want to cancel this booking?",
+        "bookingCancelSuccess": "Booking cancelled successfully!",
+        "bookingCancelError": "Failed to cancel booking.",
+        "myTrips": "My Trips",
+        "noTrips": "You have not posted any trips yet.",
+        "pricePerSeat": "Price per seat: ${{price}}",
+        "availableSeats": "Available seats: {{seats}}",
+        "confirmCancelTrip": "Are you sure you want to cancel this trip?",
+        "tripCancelSuccess": "Trip cancelled successfully!",
+        "tripCancelError": "Failed to cancel trip."
+      }}

@@ -82,17 +82,31 @@
       "bookingFailed": "No se pudo completar la reserva. Intenta de nuevo."
     }
   },
-  "profile": {
-    "title": "Perfil",
-    "fullName": "Nombre Completo",
-    "phoneNumber": "Número de Teléfono",
-    "email": "Correo Electrónico",
-    "bio": "Biografía",
-    "updateProfile": "Actualizar Perfil",
-    "uploadPhoto": "Subir Foto",
-    "changePassword": "Cambiar Contraseña",
-    "deleteAccount": "Eliminar Cuenta",
-    "profileUpdated": "Perfil actualizado correctamente",
-    "profilePictureUpdated": "Foto de perfil actualizada correctamente"
-  }
-}
+      "profile": {
+        "title": "Perfil",
+        "fullName": "Nombre Completo",
+        "phoneNumber": "Número de Teléfono",
+        "email": "Correo Electrónico",
+        "bio": "Biografía",
+        "updateProfile": "Actualizar Perfil",
+        "uploadPhoto": "Subir Foto",
+        "changePassword": "Cambiar Contraseña",
+        "deleteAccount": "Eliminar Cuenta",
+        "profileUpdated": "Perfil actualizado correctamente",
+        "profilePictureUpdated": "Foto de perfil actualizada correctamente",
+        "avatarUpdateSuccess": "¡Avatar actualizado correctamente!",
+        "myBookings": "Mis Reservas",
+        "noBookings": "Aún no tienes reservas.",
+        "totalPrice": "Precio Total: ${{price}}",
+        "seatsBooked": "Asientos reservados: {{seats}}",
+        "confirmCancelBooking": "¿Estás seguro de que quieres cancelar esta reserva?",
+        "bookingCancelSuccess": "¡Reserva cancelada correctamente!",
+        "bookingCancelError": "Error al cancelar la reserva.",
+        "myTrips": "Mis Viajes",
+        "noTrips": "Aún no has publicado ningún viaje.",
+        "pricePerSeat": "Precio por asiento: ${{price}}",
+        "availableSeats": "Asientos disponibles: {{seats}}",
+        "confirmCancelTrip": "¿Estás seguro de que quieres cancelar este viaje?",
+        "tripCancelSuccess": "¡Viaje cancelado correctamente!",
+        "tripCancelError": "Error al cancelar el viaje."
+      }}
